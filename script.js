@@ -6,9 +6,9 @@ const userInput = document.getElementById("userInput");
 
 btn.addEventListener("click", async () => {
     const text = userInput.value.trim();
-    if (!text) return alert("Vui lòng nhập nội dung cần phân tích!");
+    if (!text) return alert("Vui lòng nhập phản hồi của khách hàng!");
 
-    res.innerHTML = "Đang phân tích...";
+    res.innerHTML = "Đang phân tích sâu...";
     
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -18,27 +18,38 @@ btn.addEventListener("click", async () => {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                // Sử dụng model mới nhất đang hoạt động tốt
                 model: "llama-3.3-70b-versatile",
                 messages: [
-                    { role: "system", content: "Bạn là chuyên gia phân tích cảm xúc." },
-                    { role: "user", content: `Phân tích cảm xúc của câu này: "${text}". Trả lời Tích cực, Tiêu cực, hoặc Trung lập.` }
+                    { role: "system", content: `Bạn là chuyên gia phân tích CSKH. Hãy phân tích phản hồi của khách hàng và trả về đúng 1 đoạn code JSON không kèm giải thích khác:
+                    {
+                        "sentiment": "Tích cực/Tiêu cực/Trung lập",
+                        "score": "Điểm từ 1 đến 10",
+                        "reason": "Giải thích ngắn gọn tại sao",
+                        "urgency": "Cao/Trung bình/Thấp"
+                    }` },
+                    { role: "user", content: `Phân tích câu này: "${text}"` }
                 ],
-                temperature: 0.5
+                temperature: 0.2
             })
         });
 
         const data = await response.json();
-
-        if (data.error) {
-            res.innerHTML = "Lỗi API: " + data.error.message;
-        } else if (data.choices && data.choices[0]) {
-            res.innerHTML = "Kết quả: " + data.choices[0].message.content.trim();
-        } else {
-            res.innerHTML = "Lỗi hệ thống: Không nhận được phản hồi.";
-        }
+        const content = data.choices[0].message.content;
+        
+        // Chuyển đổi chuỗi JSON trả về thành object JS
+        const resultObj = JSON.parse(content);
+        
+        // Cập nhật giao diện với dữ liệu chuyên nghiệp
+        res.innerHTML = `
+            <div style="background: #f4f4f9; padding: 15px; border-radius: 8px; border-left: 5px solid ${resultObj.urgency === 'Cao' ? 'red' : 'green'};">
+                <p><strong>Tâm trạng:</strong> ${resultObj.sentiment}</p>
+                <p><strong>Điểm số:</strong> ${resultObj.score}/10</p>
+                <p><strong>Lý do:</strong> ${resultObj.reason}</p>
+                <p><strong>Mức độ ưu tiên:</strong> ${resultObj.urgency}</p>
+            </div>
+        `;
     } catch (e) {
         console.error(e);
-        res.innerHTML = "Lỗi kết nối mạng hoặc CORS. Vui lòng kiểm tra Console.";
+        res.innerHTML = "Có lỗi xảy ra trong quá trình phân tích chuyên sâu.";
     }
 });
