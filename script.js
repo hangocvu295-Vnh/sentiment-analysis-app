@@ -1,4 +1,4 @@
-const API_KEY = "AIzaSyAqimS9-LQb12vAIZ6GCWu3RDfAvr3ShS0"; 
+const GROQ_API_KEY = "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"; 
 const btn = document.getElementById("analyzeBtn");
 const input = document.getElementById("userInput");
 const res = document.getElementById("result");
@@ -10,31 +10,34 @@ btn.addEventListener("click", async () => {
     res.innerHTML = "Đang phân tích...";
     
     try {
-        // Cú pháp chuẩn mới nhất của Google cho 1.5-flash
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+        // ĐƯỜNG DẪN MỚI NÀY LÀ CỦA GROQ, KHÔNG PHẢI CỦA GOOGLE
+        const url = "https://api.groq.com/openai/v1/chat/completions";
         
         const response = await fetch(url, {
             method: "POST",
             headers: { 
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${GROQ_API_KEY}`
             },
             body: JSON.stringify({
-                "contents": [{
-                    "parts": [{ "text": "Phân tích cảm xúc: " + text + ". Trả lời 1 từ: Tích cực, Tiêu cực, hoặc Trung lập." }]
+                model: "llama3-8b-8192",
+                messages: [{ 
+                    role: "user", 
+                    content: `Phân tích cảm xúc: "${text}". Chỉ trả lời 1 từ: Tích cực, Tiêu cực, hoặc Trung lập.` 
                 }]
             })
         });
 
         const data = await response.json();
 
-        if (data.candidates && data.candidates[0].content) {
-            res.innerHTML = "Kết quả: " + data.candidates[0].content.parts[0].text.trim();
+        if (data.choices && data.choices[0].message) {
+            res.innerHTML = "Kết quả: " + data.choices[0].message.content.trim();
         } else {
-            // Hiển thị chi tiết lỗi để chúng ta biết nó đang bị chặn cái gì
-            console.error("Full error:", data);
-            res.innerHTML = "Lỗi: " + (data.error?.message || "Không thể lấy dữ liệu");
+            console.error("Lỗi:", data);
+            res.innerHTML = "Lỗi hệ thống, vui lòng thử lại!";
         }
     } catch (e) {
         res.innerHTML = "Lỗi kết nối!";
+        console.error(e);
     }
 });
