@@ -4,20 +4,9 @@ const btn = document.getElementById("analyzeBtn");
 const res = document.getElementById("result");
 const input = document.getElementById("userInput");
 
-// Hàm làm sạch chuỗi JSON cực mạnh
-function cleanJSON(str) {
-    // 1. Lấy phần nội dung giữa { và }
-    const start = str.indexOf('{');
-    const end = str.lastIndexOf('}');
-    if (start === -1 || end === -1) return null;
-    let json = str.substring(start, end + 1);
-    // 2. Loại bỏ ký tự xuống dòng và tab để JSON.parse không báo lỗi
-    return json.replace(/[\n\r\t]/g, " ");
-}
-
 btn.addEventListener("click", async () => {
     const text = input.value.trim();
-    if (!text) return alert("Vui lòng nhập nội dung!");
+    if (!text) return alert("Vui lòng nhập phản hồi!");
 
     res.innerHTML = "Đang phân tích...";
     
@@ -31,7 +20,7 @@ btn.addEventListener("click", async () => {
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
                 messages: [
-                    { role: "system", content: "Chỉ trả về JSON thuần. Format: {\"hai_long\": 5, \"chat_luong\": 5, \"dich_vu\": 5, \"gia_ca\": 5, \"van_de\": \"ngan gon\", \"gioi_thieu\": 5, \"ket_luan\": \"ngan gon\"}" },
+                    { role: "system", content: "Chỉ trả về JSON thuần, KHÔNG Markdown, KHÔNG giải thích. Format: {\"hai_long\": 5, \"chat_luong\": 5, \"dich_vu\": 5, \"gia_ca\": 5, \"van_de\": \"...\", \"gioi_thieu\": 5, \"ket_luan\": \"...\"}" },
                     { role: "user", content: text }
                 ],
                 temperature: 0.1
@@ -41,23 +30,26 @@ btn.addEventListener("click", async () => {
         const data = await response.json();
         const rawContent = data.choices[0].message.content;
         
-        const cleanStr = cleanJSON(rawContent);
-        if (!cleanStr) throw new Error("Không tìm thấy JSON hợp lệ");
+        // --- BỘ LỌC CỨNG ---
+        // Tìm đoạn có chứa { và } để trích xuất JSON
+        const start = rawContent.indexOf('{');
+        const end = rawContent.lastIndexOf('}');
+        const jsonStr = rawContent.substring(start, end + 1);
         
-        const obj = JSON.parse(cleanStr); // Đây là bước quan trọng nhất
+        const obj = JSON.parse(jsonStr);
         
         res.innerHTML = `
             <div class="result-card">
-                <p><strong>Hài lòng:</strong> ${obj.hai_long}/10 | <strong>Chất lượng:</strong> ${obj.chat_luong}/10</p>
+                <p><strong>Hài lòng:</strong> ${obj.hai_long}/10 | <strong>SP:</strong> ${obj.chat_luong}/10</p>
                 <p><strong>Dịch vụ:</strong> ${obj.dich_vu}/10 | <strong>Giá:</strong> ${obj.gia_ca}/10</p>
-                <p><strong>Giới thiệu:</strong> ${obj.gioi_thieu}/10</p>
+                <p><strong>Khả năng giới thiệu:</strong> ${obj.gioi_thieu}/10</p>
                 <hr>
                 <p><strong>Vấn đề:</strong> ${obj.van_de}</p>
                 <p><strong>Kết luận:</strong> ${obj.ket_luan}</p>
             </div>
         `;
     } catch (e) {
-        console.error("Lỗi chi tiết:", e);
-        res.innerHTML = "Lỗi xử lý. Vui lòng thử lại!";
+        console.error("Lỗi:", e);
+        res.innerHTML = "Lỗi xử lý. Hãy nhấn F12, chọn tab Console để xem AI đã trả về dữ liệu gì.";
     }
 });
