@@ -8,15 +8,18 @@ btn.addEventListener("click", async () => {
     if (!text) return alert("Vui lòng nhập nội dung!");
 
     res.innerHTML = "Đang phân tích...";
-    res.style.color = "blue";
     
     try {
-        // Sử dụng URL đầy đủ, không xuống dòng để tránh lỗi
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
+        // Sử dụng Proxy để vượt rào cản từ Google Cloud
+        const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+        const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
         
-        const response = await fetch(url, {
+        const response = await fetch(proxyUrl + targetUrl, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "X-Requested-With": "XMLHttpRequest" // Bắt buộc cho proxy
+            },
             body: JSON.stringify({
                 contents: [{ parts: [{ text: `Phân tích cảm xúc: "${text}". Trả lời 1 từ: Tích cực, Tiêu cực, hoặc Trung lập.` }] }]
             })
@@ -24,17 +27,13 @@ btn.addEventListener("click", async () => {
 
         const data = await response.json();
 
-        if (data.candidates && data.candidates[0].content.parts[0].text) {
-            const resultText = data.candidates[0].content.parts[0].text.trim();
-            res.innerHTML = "Kết quả: " + resultText;
-            res.style.color = "black";
+        if (data.candidates) {
+            res.innerHTML = "Kết quả: " + data.candidates[0].content.parts[0].text.trim();
         } else {
-            console.error("API Response:", data);
-            res.innerHTML = "Lỗi phản hồi: " + (data.error?.message || "Không xác định");
+            res.innerHTML = "Lỗi phản hồi: " + JSON.stringify(data.error?.message);
         }
-    } catch (error) {
-        console.error("Lỗi:", error);
-        res.innerHTML = "Lỗi kết nối API!";
-        res.style.color = "red";
+    } catch (e) {
+        console.error(e);
+        res.innerHTML = "Lỗi kết nối qua Proxy!";
     }
 });
