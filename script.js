@@ -4,7 +4,6 @@ const btn = document.getElementById("analyzeBtn");
 const res = document.getElementById("result");
 const input = document.getElementById("userInput");
 
-// Hàm bảo vệ, chuyển mọi thứ không phải số về 0
 const formatVal = (val) => {
     const num = Number(val);
     return isNaN(num) || val === null ? 0 : num;
@@ -28,9 +27,14 @@ btn.addEventListener("click", async () => {
                 messages: [
                     { 
                         role: "system", 
-                        content: `Bạn là chuyên gia phân tích CSKH. Trả về JSON thuần.
-                        QUY TẮC: Luôn trả về số (0-10) cho các trường điểm số, không trả về null hay chuỗi.
-                        CẤU TRÚC JSON: {"hai_long": 0, "chat_luong": 0, "dich_vu": 0, "gia_ca": 0, "gioi_thieu": 0, "tu_khoa": "...", "rui_ro": "...", "goi_y": "...", "ket_luan": "..."}` 
+                        content: `Bạn là chuyên gia phân tích CSKH. Hãy chấm điểm 0-10 cho từng mục dựa trên ngữ cảnh:
+                        1. Hai_long_chung: Dựa trên trải nghiệm tổng thể.
+                        2. Chat_luong_sp: Mô tả, lỗi, độ ổn định.
+                        3. Trai_nghiem_sd: Dễ dùng, tốc độ, rõ ràng.
+                        4. Ho_tro_cskh: Phản hồi, thái độ, giải quyết vấn đề.
+                        5. Gia_tri_gia_tien: Đáng tiền hay đắt.
+                        6. Quay_lai_gt: Khả năng giới thiệu, sử dụng tiếp.
+                        JSON bắt buộc: {"hai_long":0, "chat_luong":0, "trai_nghiem":0, "ho_tro":0, "gia_tri":0, "quay_lai":0, "tu_khoa":"...", "rui_ro":"...", "goi_y":"...", "ket_luan":"..."}` 
                     },
                     { role: "user", content: text }
                 ],
@@ -39,31 +43,24 @@ btn.addEventListener("click", async () => {
         });
 
         const data = await response.json();
-        let rawContent = data.choices[0].message.content;
-        
-        const start = rawContent.indexOf('{');
-        const end = rawContent.lastIndexOf('}');
-        const jsonStr = rawContent.substring(start, end + 1);
-        const obj = JSON.parse(jsonStr);
+        const obj = JSON.parse(data.choices[0].message.content.match(/\{.*\}/s)[0]);
         
         res.innerHTML = `
             <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #fff;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <p><strong>Hài lòng:</strong> ${formatVal(obj.hai_long)}/10</p>
-                    <p><strong>SP:</strong> ${formatVal(obj.chat_luong)}/10</p>
-                    <p><strong>DV:</strong> ${formatVal(obj.dich_vu)}/10</p>
-                    <p><strong>Giá:</strong> ${formatVal(obj.gia_ca)}/10</p>
-                    <p><strong>GT:</strong> ${formatVal(obj.gioi_thieu)}/10</p>
-                </div>
+                <p><strong>1. Hài lòng chung:</strong> ${formatVal(obj.hai_long)}/10</p>
+                <p><strong>2. Chất lượng SP:</strong> ${formatVal(obj.chat_luong)}/10</p>
+                <p><strong>3. Trải nghiệm SD:</strong> ${formatVal(obj.trai_nghiem)}/10</p>
+                <p><strong>4. Hỗ trợ CSKH:</strong> ${formatVal(obj.ho_tro)}/10</p>
+                <p><strong>5. Giá trị/Tiền:</strong> ${formatVal(obj.gia_tri)}/10</p>
+                <p><strong>6. Quay lại/GT:</strong> ${formatVal(obj.quay_lai)}/10</p>
                 <hr>
-                <p><strong>Từ khóa:</strong> ${obj.tu_khoa || 'Không có'}</p>
+                <p><strong>Từ khóa:</strong> ${obj.tu_khoa || 'Không'}</p>
                 <p><strong>Rủi ro:</strong> ${obj.rui_ro || 'Không'}</p>
                 <p><strong>Gợi ý:</strong> ${obj.goi_y || 'Chưa có'}</p>
                 <p><strong>Kết luận:</strong> ${obj.ket_luan || 'Không có'}</p>
             </div>
         `;
     } catch (e) {
-        console.error("Lỗi:", e);
-        res.innerHTML = "Lỗi xử lý dữ liệu. Hãy kiểm tra tab Console (F12).";
+        res.innerHTML = "Lỗi dữ liệu. Hãy nhấn F12 để kiểm tra.";
     }
 });
