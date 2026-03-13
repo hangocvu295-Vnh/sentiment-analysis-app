@@ -2,13 +2,13 @@ const GROQ_API_KEY = "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";
 
 const btn = document.getElementById("analyzeBtn");
 const res = document.getElementById("result");
-const userInput = document.getElementById("userInput");
+const input = document.getElementById("userInput");
 
 btn.addEventListener("click", async () => {
-    const text = userInput.value.trim();
-    if (!text) return alert("Vui lòng nhập phản hồi của khách hàng!");
+    const text = input.value.trim();
+    if (!text) return alert("Vui lòng nhập nội dung!");
 
-    res.innerHTML = "Đang phân tích sâu...";
+    res.innerHTML = "Đang phân tích...";
     
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -20,36 +20,28 @@ btn.addEventListener("click", async () => {
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
                 messages: [
-                    { role: "system", content: `Bạn là chuyên gia phân tích CSKH. Hãy phân tích phản hồi của khách hàng và trả về đúng 1 đoạn code JSON không kèm giải thích khác:
-                    {
-                        "sentiment": "Tích cực/Tiêu cực/Trung lập",
-                        "score": "Điểm từ 1 đến 10",
-                        "reason": "Giải thích ngắn gọn tại sao",
-                        "urgency": "Cao/Trung bình/Thấp"
-                    }` },
-                    { role: "user", content: `Phân tích câu này: "${text}"` }
+                    { role: "system", content: `Bạn là chuyên gia CSKH. Trả về đúng 1 đoạn JSON: {"sentiment": "...", "score": "...", "reason": "...", "urgency": "..."}` },
+                    { role: "user", content: text }
                 ],
                 temperature: 0.2
             })
         });
 
         const data = await response.json();
-        const content = data.choices[0].message.content;
+        const obj = JSON.parse(data.choices[0].message.content);
         
-        // Chuyển đổi chuỗi JSON trả về thành object JS
-        const resultObj = JSON.parse(content);
+        const color = obj.urgency === 'Cao' ? '#e74c3c' : '#27ae60';
         
-        // Cập nhật giao diện với dữ liệu chuyên nghiệp
         res.innerHTML = `
-            <div style="background: #f4f4f9; padding: 15px; border-radius: 8px; border-left: 5px solid ${resultObj.urgency === 'Cao' ? 'red' : 'green'};">
-                <p><strong>Tâm trạng:</strong> ${resultObj.sentiment}</p>
-                <p><strong>Điểm số:</strong> ${resultObj.score}/10</p>
-                <p><strong>Lý do:</strong> ${resultObj.reason}</p>
-                <p><strong>Mức độ ưu tiên:</strong> ${resultObj.urgency}</p>
+            <div class="result-card" style="border-left-color: ${color};">
+                <div class="row"><strong>Tâm trạng:</strong> ${obj.sentiment}</div>
+                <div class="row"><strong>Điểm số:</strong> ${obj.score}/10</div>
+                <div class="row"><strong>Độ ưu tiên:</strong> ${obj.urgency}</div>
+                <hr>
+                <p style="font-size: 13px; color: #555;"><strong>Lý do:</strong> ${obj.reason}</p>
             </div>
         `;
     } catch (e) {
-        console.error(e);
-        res.innerHTML = "Có lỗi xảy ra trong quá trình phân tích chuyên sâu.";
+        res.innerHTML = "Lỗi kết nối. Hãy thử lại!";
     }
 });
