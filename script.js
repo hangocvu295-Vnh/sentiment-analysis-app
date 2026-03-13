@@ -6,9 +6,9 @@ const input = document.getElementById("userInput");
 
 btn.addEventListener("click", async () => {
     const text = input.value.trim();
-    if (!text) return alert("Vui lòng nhập phản hồi!");
+    if (!text) return alert("Vui lòng nhập nội dung!");
 
-    res.innerHTML = "Đang phân tích chuyên sâu...";
+    res.innerHTML = "Đang phân tích sâu...";
     
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -20,14 +20,15 @@ btn.addEventListener("click", async () => {
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
                 messages: [
-                    { role: "system", content: `Bạn là chuyên gia CSKH. Phân tích phản hồi và trả về JSON chuẩn, không Markdown, không giải thích. Định dạng:
-                    {
-                        "hai_long": 0, "chat_luong": 0, "dich_vu": 0, "gia_ca": 0, "gioi_thieu": 0,
-                        "tu_khoa": "Liệt kê các từ khóa tiêu cực/tích cực",
-                        "rui_ro": "Có hoặc Không",
-                        "goi_y": "CSKH liên hệ lại + hướng dẫn chi tiết",
-                        "ket_luan": "Đánh giá chung"
-                    }` },
+                    { 
+                        role: "system", 
+                        content: `Bạn là chuyên gia phân tích CSKH. Trả về JSON thuần.
+                        QUY TẮC ĐÁNH GIÁ (BẮT BUỘC):
+                        - Điểm 8-10: Khách hàng hài lòng, khen ngợi, vui vẻ.
+                        - Điểm 5-7: Khách hàng trung lập, góp ý nhẹ nhàng.
+                        - Điểm 1-4: Khách hàng tiêu cực, phàn nàn, khó chịu.
+                        CẤU TRÚC JSON: {"hai_long": number, "chat_luong": number, "dich_vu": number, "gia_ca": number, "gioi_thieu": number, "tu_khoa": "string", "rui_ro": "Có/Không", "goi_y": "string", "ket_luan": "string"}` 
+                    },
                     { role: "user", content: text }
                 ],
                 temperature: 0.1
@@ -37,16 +38,16 @@ btn.addEventListener("click", async () => {
         const data = await response.json();
         let rawContent = data.choices[0].message.content;
         
-        // Làm sạch JSON
+        // Cơ chế trích xuất JSON "sắt đá"
         const start = rawContent.indexOf('{');
         const end = rawContent.lastIndexOf('}');
         const jsonStr = rawContent.substring(start, end + 1);
         const obj = JSON.parse(jsonStr);
         
-        // Hiển thị đầy đủ 8 mục yêu cầu
+        // Hiển thị kết quả
         res.innerHTML = `
-            <div class="result-card" style="padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div style="border: 1px solid #ccc; padding: 15px; border-radius: 8px; background: #fff;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom:10px;">
                     <p><strong>Hài lòng:</strong> ${obj.hai_long}/10</p>
                     <p><strong>SP:</strong> ${obj.chat_luong}/10</p>
                     <p><strong>DV:</strong> ${obj.dich_vu}/10</p>
@@ -54,7 +55,7 @@ btn.addEventListener("click", async () => {
                     <p><strong>GT:</strong> ${obj.gioi_thieu}/10</p>
                 </div>
                 <hr>
-                <p><strong>Từ khóa:</strong> <span style="color: #d9534f;">${obj.tu_khoa}</span></p>
+                <p><strong>Từ khóa:</strong> <span style="color: ${obj.hai_long < 5 ? 'red' : 'green'}">${obj.tu_khoa}</span></p>
                 <p><strong>Rủi ro rời bỏ:</strong> <b>${obj.rui_ro}</b></p>
                 <p><strong>Gợi ý xử lý:</strong> ${obj.goi_y}</p>
                 <p><strong>Kết luận:</strong> ${obj.ket_luan}</p>
@@ -62,6 +63,6 @@ btn.addEventListener("click", async () => {
         `;
     } catch (e) {
         console.error("Lỗi:", e);
-        res.innerHTML = "Lỗi xử lý dữ liệu. Hãy kiểm tra tab Console (F12).";
+        res.innerHTML = "Lỗi dữ liệu. Hãy kiểm tra tab Console (F12).";
     }
 });
