@@ -11,7 +11,8 @@ btn.addEventListener("click", async () => {
     
     try {
         // Đảm bảo URL này chính xác và không bị xuống dòng
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+        // Đổi từ gemini-1.5-flash sang gemini-1.0-pro
+const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key=${API_KEY}`;
         
         const response = await fetch(url, {
             method: "POST",
