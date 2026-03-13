@@ -8,11 +8,11 @@ btn.addEventListener("click", async () => {
     if (!text) return alert("Vui lòng nhập nội dung!");
 
     res.innerHTML = "Đang phân tích...";
+    res.style.color = "blue";
     
     try {
-        // Đảm bảo URL này chính xác và không bị xuống dòng
-        // Đổi từ gemini-1.5-flash sang gemini-1.0-pro
-const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key=${API_KEY}`;
+        // Sử dụng URL đầy đủ, không xuống dòng để tránh lỗi
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
         
         const response = await fetch(url, {
             method: "POST",
@@ -24,18 +24,17 @@ const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-
 
         const data = await response.json();
 
-        // Kiểm tra xem API có trả về lỗi không
-        if (data.error) {
-            console.error("API Error:", data.error);
-            res.innerHTML = "Lỗi API: " + data.error.message;
-        } else if (data.candidates && data.candidates[0].content) {
-            const resultText = data.candidates[0].content.parts[0].text;
+        if (data.candidates && data.candidates[0].content.parts[0].text) {
+            const resultText = data.candidates[0].content.parts[0].text.trim();
             res.innerHTML = "Kết quả: " + resultText;
+            res.style.color = "black";
         } else {
-            res.innerHTML = "Không nhận được phản hồi từ AI.";
+            console.error("API Response:", data);
+            res.innerHTML = "Lỗi phản hồi: " + (data.error?.message || "Không xác định");
         }
     } catch (error) {
-        console.error(error);
-        res.innerHTML = "Lỗi kết nối!";
+        console.error("Lỗi:", error);
+        res.innerHTML = "Lỗi kết nối API!";
+        res.style.color = "red";
     }
 });
