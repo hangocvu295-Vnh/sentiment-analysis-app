@@ -1,54 +1,40 @@
-// Mã API Key đã được cập nhật
-const API_KEY = "AIzaSyBYmtlAu2Xi_aAN9eB40Zk-H-9p9ooKh_g"; 
-
+const API_KEY = "AIzaSyAqimS9-LQb12vAIZ6GCWu3RDfAvr3ShS0"; 
 const btn = document.getElementById("analyzeBtn");
 const input = document.getElementById("userInput");
 const res = document.getElementById("result");
 
 btn.addEventListener("click", async () => {
     const text = input.value.trim();
-    if (!text) {
-        alert("Vui lòng nhập nội dung!");
-        return;
-    }
+    if (!text) return alert("Vui lòng nhập nội dung!");
 
     res.innerHTML = "Đang phân tích...";
-    res.style.color = "black";
     
     try {
-        // Gọi API Gemini 1.5 Flash
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+        // Đảm bảo URL này chính xác và không bị xuống dòng
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+        
+        const response = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                contents: [{ 
-                    parts: [{ text: `Phân tích cảm xúc đoạn văn sau, chỉ trả về 1 từ: Tích cực, Tiêu cực hoặc Trung lập. Đoạn văn: "${text}"` }] 
-                }]
+                contents: [{ parts: [{ text: `Phân tích cảm xúc: "${text}". Trả lời 1 từ: Tích cực, Tiêu cực, hoặc Trung lập.` }] }]
             })
         });
 
         const data = await response.json();
 
-        // Kiểm tra lỗi từ phía API
+        // Kiểm tra xem API có trả về lỗi không
         if (data.error) {
-            throw new Error(data.error.message);
-        }
-
-        const resultText = data.candidates[0].content.parts[0].text.trim();
-        res.innerHTML = `Kết quả: ${resultText}`;
-        
-        // Đổi màu kết quả
-        if (resultText.includes("Tích cực")) {
-            res.style.color = "green";
-        } else if (resultText.includes("Tiêu cực")) {
-            res.style.color = "red";
+            console.error("API Error:", data.error);
+            res.innerHTML = "Lỗi API: " + data.error.message;
+        } else if (data.candidates && data.candidates[0].content) {
+            const resultText = data.candidates[0].content.parts[0].text;
+            res.innerHTML = "Kết quả: " + resultText;
         } else {
-            res.style.color = "orange";
+            res.innerHTML = "Không nhận được phản hồi từ AI.";
         }
-
     } catch (error) {
-        console.error("Lỗi:", error);
-        res.innerHTML = "Lỗi kết nối API! Vui lòng thử lại.";
-        res.style.color = "red";
+        console.error(error);
+        res.innerHTML = "Lỗi kết nối!";
     }
 });
