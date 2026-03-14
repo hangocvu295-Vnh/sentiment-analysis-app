@@ -1,12 +1,7 @@
-:root { --primary: #2c3e50; --accent: #3498db; --bg: #f8f9fa; }
-body { background: var(--bg); font-family: 'Segoe UI', sans-serif; padding: 20px; }
-.container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-textarea { width: 100%; height: 120px; padding: 15px; border: 1px solid #ddd; border-radius: 10px; margin: 20px 0; box-sizing: border-box; font-size: 16px; resize: none; }
-button { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-button:hover { background: #357abd; }
-
-.section-title { color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-top: 25px; font-size: 1.1em; font-weight: bold; text-transform: uppercase; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; }
-.stat-card { background: #fdfdfd; border: 1px solid #eee; padding: 12px; border-radius: 8px; text-align: center; }
-.stat-card strong { display: block; font-size: 0.8em; color: #7f8c8d; margin-bottom: 5px; }
-.insight-box { background: #e8f4fd; padding: 15px; border-radius: 8px; border-left: 5px solid var(--accent); margin-top: 15px; font-weight: 500; color: #2980b9; line-height: 1.6; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+.metric { margin-bottom: 10px; }
+.bar { background: #eee; height: 8px; border-radius: 4px; margin-top: 5px; }
+.fill { background: #27ae60; height: 100%; border-radius: 4px; }
+.psych-box { background: #f0f7ff; padding: 15px; border-radius: 10px; border-left: 5px solid #3498db; }
+.action-steps { margin-top: 20px; background: #fffcf0; padding: 15px; border-radius: 10px; }
+.step { margin-bottom: 8px; font-size: 0.9em; color: #555; }
