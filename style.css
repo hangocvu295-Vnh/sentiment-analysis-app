@@ -1,7 +1,7 @@
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-.metric { margin-bottom: 10px; }
-.bar { background: #eee; height: 8px; border-radius: 4px; margin-top: 5px; }
-.fill { background: #27ae60; height: 100%; border-radius: 4px; }
-.psych-box { background: #f0f7ff; padding: 15px; border-radius: 10px; border-left: 5px solid #3498db; }
-.action-steps { margin-top: 20px; background: #fffcf0; padding: 15px; border-radius: 10px; }
-.step { margin-bottom: 8px; font-size: 0.9em; color: #555; }
+.metric-box { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+.metric-item { background: #fff; padding: 12px; border-radius: 8px; border: 1px solid #eee; }
+.bar-container { background: #eee; height: 8px; border-radius: 4px; margin-top: 8px; }
+.bar-fill { height: 100%; border-radius: 4px; background: #27ae60; }
+.insight-section { background: #f8f9fa; padding: 20px; border-radius: 12px; border-left: 5px solid #3498db; }
+.insight-item { margin-bottom: 15px; }
+.insight-label { font-weight: bold; color: #2c3e50; display: block; margin-bottom: 5px; }
