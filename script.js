@@ -13,7 +13,7 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
     const text = document.getElementById("userInput").value.trim();
     if (!text) return alert("Vui lòng nhập phản hồi!");
     const res = document.getElementById("result");
-    res.innerHTML = "🚀 Đang phân tích quy trình...";
+    res.innerHTML = "🧠 Đang phân tích tâm lý khách hàng...";
     
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -21,22 +21,27 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
             headers: { "Authorization": `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
-                messages: [{ role: "system", content: `Bạn là CX Strategist. Phân tích 6 mục (0-10đ). Trả về JSON: {"hai_long":0, "chat_luong":0, "trai_nghiem":0, "ho_tro":0, "gia_tri":0, "quay_lai":0, "insight":"...", "tu_khoa":"...", "rui_ro":"...", "hanh_dong":"bước 1\nbước 2\nbước 3", "ket_luan":"..."}` }, { role: "user", content: text }],
-                temperature: 0.1
+                messages: [{ role: "system", content: `Bạn là chuyên gia phân tích tâm lý khách hàng. Phân tích 6 mục điểm (0-10) và trả về JSON: {"hai_long":0, "chat_luong":0, "trai_nghiem":0, "ho_tro":0, "gia_tri":0, "quay_lai":0, "tam_ly_an":"động cơ ẩn", "nhom_khach_hang":"phân loại + phong cách giao tiếp", "chi_so_trung_thanh":0, "hanh_dong":"bước 1\nbước 2\nbước 3", "ket_luan":"tóm tắt"}` }, { role: "user", content: text }],
+                temperature: 0.2
             })
         });
         const data = await response.json();
         const obj = JSON.parse(data.choices[0].message.content.match(/\{[\s\S]*\}/)[0]);
 
         res.innerHTML = `<div class="dashboard">
-            <h2 style="border-bottom: 2px solid #4a90e2; padding-bottom: 10px;">📊 BÁO CÁO PHÂN TÍCH</h2>
+            <h2 style="border-bottom: 2px solid #4a90e2; padding-bottom: 10px;">📊 BÁO CÁO CHUYÊN GIA</h2>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div>${createBar("Hài lòng", obj.hai_long)}${createBar("Sản phẩm", obj.chat_luong)}${createBar("Trải nghiệm", obj.trai_nghiem)}</div>
                 <div>${createBar("Hỗ trợ", obj.ho_tro)}${createBar("Giá trị", obj.gia_tri)}${createBar("Quay lại", obj.quay_lai)}</div>
             </div>
-            <div style="margin-top:20px;"><strong>💡 Insight:</strong> ${obj.insight}</div>
+            <div class="psych-box">
+                <h4 style="margin:0 0 10px 0; color:#2c3e50;">🧠 Phân tích tâm lý chuyên sâu:</h4>
+                <p><strong>👥 Chân dung:</strong> ${obj.nhom_khach_hang}</p>
+                <p><strong>🎯 Động cơ ẩn:</strong> ${obj.tam_ly_an}</p>
+                <p><strong>📈 Chỉ số trung thành:</strong> ${obj.chi_so_trung_thanh}/10</p>
+            </div>
             <div class="action-steps">
-                <h3 style="margin-top:0; color:#856404; font-size:1em;">🚀 Hướng giải quyết:</h3>
+                <h3 style="margin-top:0; color:#856404; font-size:1em;">🚀 Hướng giải quyết chuyên gia:</h3>
                 ${obj.hanh_dong.split('\n').map((step, i) => `<div class="action-item"><span class="step-number">${i+1}</span><span>${step}</span></div>`).join('')}
             </div>
         </div>`;
