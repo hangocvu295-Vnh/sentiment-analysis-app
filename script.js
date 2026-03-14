@@ -1,6 +1,8 @@
+const GROQ_API_KEY = "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";
+
 document.getElementById("analyzeBtn").addEventListener("click", async () => {
     const text = document.getElementById("userInput").value.trim();
-    if (!text) return;
+    if (!text) return alert("Nhập phản hồi đi!");
     const res = document.getElementById("result");
     res.innerHTML = "🔍 Đang phân tích...";
 
@@ -10,13 +12,11 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
             headers: { "Authorization": `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
-                messages: [{ 
-                    role: "system", 
-                    content: `Bạn là chuyên gia phân tích CX. Trả về JSON PHẲNG. Các key bắt buộc: 
-                    hai_long, ho_tro, san_pham, gia_tri, trai_nghiem, quay_lai (số 0-10). 
-                    chan_dung (insight hành vi sắc bén), dong_co_an (động cơ tâm lý sâu xa), chi_so_trung_thanh (số 0-10), 
-                    giai_phap_1, giai_phap_2, giai_phap_3 (hành động cụ thể).` 
-                }, { role: "user", content: text }],
+                messages: [{ role: "system", content: `Bạn là CX Analyst. Trả về JSON duy nhất với key: 
+                "hai_long", "ho_tro", "san_pham", "gia_tri", "trai_nghiem", "quay_lai" (số 1-10).
+                "chan_dung" (insight hành vi sắc bén), "dong_co_an" (động cơ tâm lý sâu xa), "trung_thanh" (số 1-10).
+                "giai_phap_1", "giai_phap_2", "giai_phap_3" (hành động cụ thể, không chung chung).` }, 
+                { role: "user", content: text }],
                 temperature: 0.2
             })
         });
@@ -26,36 +26,28 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
 
         res.innerHTML = `
             <h3>📊 BÁO CÁO CHUYÊN GIA</h3>
-            <div class="metric-box">
-                ${renderMetric("Hài lòng", obj.hai_long)} ${renderMetric("Hỗ trợ", obj.ho_tro)}
-                ${renderMetric("Sản phẩm", obj.san_pham)} ${renderMetric("Giá trị", obj.gia_tri)}
+            <div class="metric-grid">
+                ${renderBar("Hài lòng", obj.hai_long)} ${renderBar("Hỗ trợ", obj.ho_tro)}
+                ${renderBar("Sản phẩm", obj.san_pham)} ${renderMetric("Giá trị", obj.gia_tri)}
                 ${renderMetric("Trải nghiệm", obj.trai_nghiem)} ${renderMetric("Quay lại", obj.quay_lai)}
             </div>
-            <div class="insight-section">
-                <div class="insight-item">
-                    <span class="insight-label">👥 Chân dung tâm lý:</span> ${obj.chan_dung}
-                </div>
-                <div class="insight-item">
-                    <span class="insight-label">🎯 Động cơ ẩn:</span> ${obj.dong_co_an}
-                </div>
-                <div class="insight-item">
-                    <span class="insight-label">📈 Chỉ số trung thành:</span> ${obj.chi_so_trung_thanh}/10
-                </div>
+            <div class="psych-box">
+                <p><strong>👥 Chân dung:</strong> ${obj.chan_dung}</p>
+                <p><strong>🎯 Động cơ ẩn:</strong> ${obj.dong_co_an}</p>
+                <p><strong>📈 Chỉ số trung thành:</strong> ${obj.trung_thanh}/10</p>
             </div>
-            <div class="insight-section" style="margin-top:15px; border-left-color: #f39c12;">
-                <span class="insight-label">🚀 Hướng giải quyết chuyên gia:</span>
+            <div class="action-box">
+                <h4>🚀 Hướng giải quyết chuyên gia:</h4>
                 <p>1. ${obj.giai_phap_1}</p>
                 <p>2. ${obj.giai_phap_2}</p>
                 <p>3. ${obj.giai_phap_3}</p>
             </div>
         `;
-    } catch (e) { res.innerHTML = "❌ Lỗi hệ thống. Thử lại!"; }
+    } catch (e) { res.innerHTML = "❌ AI bị lỗi dữ liệu, thử lại lần nữa đi bạn!"; }
 });
 
-function renderMetric(label, val) {
-    const v = val || 0;
-    return `<div class="metric-item">
-        <div style="display:flex; justify-content:space-between"><span>${label}</span><strong>${v}/10</strong></div>
-        <div class="bar-container"><div class="bar-fill" style="width:${v*10}%"></div></div>
-    </div>`;
+function renderBar(l, v) {
+    const val = v || 5;
+    return `<div class="metric-item"><div>${l} <strong>${val}/10</strong></div><div class="bar-container"><div class="bar-fill" style="width:${val*10}%"></div></div></div>`;
 }
+function renderMetric(l, v) { return renderBar(l, v); }
