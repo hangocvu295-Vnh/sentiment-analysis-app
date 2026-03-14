@@ -1,4 +1,5 @@
-const GROQ_API_KEY = "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";
+const GEMINI_API_KEY = "AIzaSyBJWQwx8z-Sq6_UxJp5SPsfWm38t8WQOAw"; // Key bạn vừa gửi
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 const btn = document.getElementById("analyzeBtn");
 const res = document.getElementById("result");
@@ -13,40 +14,42 @@ btn.addEventListener("click", async () => {
     const text = input.value.trim();
     if (!text) return alert("Vui lòng nhập phản hồi!");
 
-    res.innerHTML = "Đang phân tích chuyên sâu...";
+    res.innerHTML = "Đang kết nối Google AI để phân tích...";
     
     try {
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        const response = await fetch(API_URL, {
             method: "POST",
-            headers: { 
-                "Authorization": `Bearer ${GROQ_API_KEY}`,
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
-                messages: [
-                    { 
-                        role: "system", 
-                        content: `Bạn là chuyên gia phân tích CSKH. Hãy chấm điểm 0-10 cho từng mục dựa trên ngữ cảnh:
-                        1. Hai_long_chung: Dựa trên trải nghiệm tổng thể.
-                        2. Chat_luong_sp: Mô tả, lỗi, độ ổn định.
-                        3. Trai_nghiem_sd: Dễ dùng, tốc độ, rõ ràng.
-                        4. Ho_tro_cskh: Phản hồi, thái độ, giải quyết vấn đề.
-                        5. Gia_tri_gia_tien: Đáng tiền hay đắt.
-                        6. Quay_lai_gt: Khả năng giới thiệu, sử dụng tiếp.
-                        JSON bắt buộc: {"hai_long":0, "chat_luong":0, "trai_nghiem":0, "ho_tro":0, "gia_tri":0, "quay_lai":0, "tu_khoa":"...", "rui_ro":"...", "goi_y":"...", "ket_luan":"..."}` 
-                    },
-                    { role: "user", content: text }
-                ],
-                temperature: 0.1
+                contents: [{
+                    parts: [{
+                        text: `Bạn là chuyên gia phân tích CSKH. Hãy đọc phản hồi sau và chấm điểm 0-10 cho 6 mục. 
+                        Trả về DUY NHẤT một khối JSON thuần túy, không dùng markdown, không giải thích gì thêm.
+                        
+                        Các mục chấm điểm:
+                        1. hai_long: Trải nghiệm tổng thể.
+                        2. chat_luong: Đúng mô tả, độ ổn định, lỗi.
+                        3. trai_nghiem: Tốc độ, dễ dùng, rõ ràng.
+                        4. ho_tro: Thái độ, tốc độ phản hồi.
+                        5. gia_tri: Đáng tiền hay không.
+                        6. quay_lai: Khả năng giới thiệu/quay lại.
+
+                        Dữ liệu cần thêm: tu_khoa (tiêu cực), rui_ro (Có/Không), goi_y (xử lý cụ thể), ket_luan.
+                        
+                        Phản hồi của khách: "${text}"`
+                    }]
+                }],
+                generationConfig: { responseMimeType: "application/json" }
             })
         });
 
         const data = await response.json();
-        const obj = JSON.parse(data.choices[0].message.content.match(/\{.*\}/s)[0]);
+        const rawContent = data.candidates[0].content.parts[0].text;
+        const obj = JSON.parse(rawContent);
         
         res.innerHTML = `
-            <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #fff;">
+            <div style="border: 2px solid #4285F4; padding: 15px; border-radius: 8px; background: #fff;">
+                <h3 style="color:#4285F4; margin-top:0;">Kết quả từ Google AI</h3>
                 <p><strong>1. Hài lòng chung:</strong> ${formatVal(obj.hai_long)}/10</p>
                 <p><strong>2. Chất lượng SP:</strong> ${formatVal(obj.chat_luong)}/10</p>
                 <p><strong>3. Trải nghiệm SD:</strong> ${formatVal(obj.trai_nghiem)}/10</p>
@@ -54,13 +57,14 @@ btn.addEventListener("click", async () => {
                 <p><strong>5. Giá trị/Tiền:</strong> ${formatVal(obj.gia_tri)}/10</p>
                 <p><strong>6. Quay lại/GT:</strong> ${formatVal(obj.quay_lai)}/10</p>
                 <hr>
-                <p><strong>Từ khóa:</strong> ${obj.tu_khoa || 'Không'}</p>
-                <p><strong>Rủi ro:</strong> ${obj.rui_ro || 'Không'}</p>
-                <p><strong>Gợi ý:</strong> ${obj.goi_y || 'Chưa có'}</p>
+                <p><strong>Từ khóa tiêu cực:</strong> <span style="color:red;">${obj.tu_khoa || 'Không'}</span></p>
+                <p><strong>Rủi ro rời bỏ:</strong> <b>${obj.rui_ro || 'Không'}</b></p>
+                <p><strong>Gợi ý xử lý:</strong> ${obj.goi_y || 'Chưa có'}</p>
                 <p><strong>Kết luận:</strong> ${obj.ket_luan || 'Không có'}</p>
             </div>
         `;
     } catch (e) {
-        res.innerHTML = "Lỗi dữ liệu. Hãy nhấn F12 để kiểm tra.";
+        console.error(e);
+        res.innerHTML = "Lỗi kết nối Google AI Studio. Vui lòng kiểm tra lại API Key hoặc mạng.";
     }
 });
