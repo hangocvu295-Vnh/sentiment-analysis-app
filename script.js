@@ -1,19 +1,10 @@
 const GROQ_API_KEY = "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";
 
-const createBar = (label, value) => {
-    const num = Math.min(Number(value) || 0, 10);
-    let color = num < 5 ? "#e74c3c" : (num < 8 ? "#f39c12" : "#27ae60");
-    return `<div class="metric-bar">
-        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:0.9em;"><span>${label}</span><span>${num}/10</span></div>
-        <div class="bar-bg"><div class="bar-fill" style="width: ${num * 10}%; background-color: ${color};"></div></div>
-    </div>`;
-};
-
 document.getElementById("analyzeBtn").addEventListener("click", async () => {
     const text = document.getElementById("userInput").value.trim();
     if (!text) return alert("Vui lòng nhập phản hồi!");
     const res = document.getElementById("result");
-    res.innerHTML = "🧠 Đang phân tích tâm lý khách hàng...";
+    res.innerHTML = "🔍 Đang chẩn đoán tâm lý khách hàng...";
     
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -21,29 +12,39 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
             headers: { "Authorization": `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
-                messages: [{ role: "system", content: `Bạn là chuyên gia phân tích tâm lý khách hàng. Phân tích 6 mục điểm (0-10) và trả về JSON: {"hai_long":0, "chat_luong":0, "trai_nghiem":0, "ho_tro":0, "gia_tri":0, "quay_lai":0, "tam_ly_an":"động cơ ẩn", "nhom_khach_hang":"phân loại + phong cách giao tiếp", "chi_so_trung_thanh":0, "hanh_dong":"bước 1\nbước 2\nbước 3", "ket_luan":"tóm tắt"}` }, { role: "user", content: text }],
+                messages: [{ role: "system", content: `Bạn là Chuyên gia Tâm lý học hành vi khách hàng. Phân tích 5 tầng:
+                1. KPI (0-10): hài_long, quay_lai, gioi_thieu
+                2. Trai_nghiem (0-10): giao_dien, toc_do, quy_trinh
+                3. Cam_xuc (0-10): tin_tuong, buc_boi, hao_hung
+                4. Tam_ly: dong_co (mô tả ngắn), noi_lo (mô tả ngắn), nguong_that_vong (mô tả ngắn)
+                5. Insight: 1 phát hiện bất ngờ + 1 hành động ưu tiên.
+                Trả về JSON duy nhất.` }, { role: "user", content: text }],
                 temperature: 0.2
             })
         });
         const data = await response.json();
         const obj = JSON.parse(data.choices[0].message.content.match(/\{[\s\S]*\}/)[0]);
 
-        res.innerHTML = `<div class="dashboard">
-            <h2 style="border-bottom: 2px solid #4a90e2; padding-bottom: 10px;">📊 BÁO CÁO CHUYÊN GIA</h2>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div>${createBar("Hài lòng", obj.hai_long)}${createBar("Sản phẩm", obj.chat_luong)}${createBar("Trải nghiệm", obj.trai_nghiem)}</div>
-                <div>${createBar("Hỗ trợ", obj.ho_tro)}${createBar("Giá trị", obj.gia_tri)}${createBar("Quay lại", obj.quay_lai)}</div>
+        res.innerHTML = `
+            <div class="section-title">1. Chỉ số KPI</div>
+            <div class="grid-3">${renderStats(obj.kpi)}</div>
+            <div class="section-title">2. Tầng Trải nghiệm</div>
+            <div class="grid-3">${renderStats(obj.trai_nghiem)}</div>
+            <div class="section-title">3. Tầng Cảm xúc</div>
+            <div class="grid-3">${renderStats(obj.cam_xuc)}</div>
+            <div class="section-title">4. Phân tích Tâm lý</div>
+            <div style="margin-top:10px; font-size:0.95em;">
+                <p><strong>🎯 Động cơ:</strong> ${obj.tam_ly.dong_co}</p>
+                <p><strong>⚠️ Ngưỡng thất vọng:</strong> ${obj.tam_ly.nguong_that_vong}</p>
             </div>
-            <div class="psych-box">
-                <h4 style="margin:0 0 10px 0; color:#2c3e50;">🧠 Phân tích tâm lý chuyên sâu:</h4>
-                <p><strong>👥 Chân dung:</strong> ${obj.nhom_khach_hang}</p>
-                <p><strong>🎯 Động cơ ẩn:</strong> ${obj.tam_ly_an}</p>
-                <p><strong>📈 Chỉ số trung thành:</strong> ${obj.chi_so_trung_thanh}/10</p>
-            </div>
-            <div class="action-steps">
-                <h3 style="margin-top:0; color:#856404; font-size:1em;">🚀 Hướng giải quyết chuyên gia:</h3>
-                ${obj.hanh_dong.split('\n').map((step, i) => `<div class="action-item"><span class="step-number">${i+1}</span><span>${step}</span></div>`).join('')}
-            </div>
-        </div>`;
-    } catch (e) { res.innerHTML = "❌ Lỗi: " + e.message; }
+            <div class="section-title">5. Insight Chuyên gia</div>
+            <div class="insight-box">${obj.insight}</div>
+        `;
+    } catch (e) { res.innerHTML = "❌ Lỗi: Dữ liệu phân tích không đạt chuẩn chuyên gia. Vui lòng thử lại."; }
 });
+
+function renderStats(obj) {
+    return Object.entries(obj).map(([key, val]) => 
+        `<div class="stat-card"><strong>${key.replace('_',' ')}</strong><span style="font-size:1.3em; display:block;">${val}/10</span></div>`
+    ).join('');
+}
