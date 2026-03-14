@@ -2,9 +2,9 @@ const GROQ_API_KEY = "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";
 
 document.getElementById("analyzeBtn").addEventListener("click", async () => {
     const text = document.getElementById("userInput").value.trim();
-    if (!text) return alert("Vui lòng nhập phản hồi của khách hàng.");
+    if (!text) return alert("Nhập phản hồi!");
     const res = document.getElementById("result");
-    res.innerHTML = "🔍 Đang phân tích chuyên sâu...";
+    res.innerHTML = "🔍 Đang phân tích...";
 
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -12,10 +12,12 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
             headers: { "Authorization": `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
-                messages: [{ 
-                    role: "system", 
-                    content: `Bạn là CX Analyst. Trả về JSON PHẲNG. Các key: "hai_long", "ho_tro", "san_pham", "gia_tri", "trai_nghiem", "quay_lai" (số 1-10). "chan_dung" (insight hành vi sắc bén), "dong_co_an" (động cơ tâm lý), "trung_thanh" (số 1-10), "giai_phap_1", "giai_phap_2", "giai_phap_3". KHÔNG GIẢI THÍCH, KHÔNG CHỮ THỪA.` 
-                }, { role: "user", content: text }],
+                messages: [{ role: "system", content: `Bạn là chuyên gia CX. Trả về JSON PHẲNG với đúng các key: 
+                "hai_long", "san_pham", "trai_nghiem", "ho_tro", "gia_tri", "quay_lai" (số 0-10), 
+                "tin_tuong", "buc_boi", "hao_hung" (số 0-10), 
+                "dong_co", "nguong_that_vong" (mô tả), "insight" (phân tích sâu). 
+                KHÔNG ĐƯỢC THAY ĐỔI TÊN KEY.` }, 
+                { role: "user", content: text }],
                 temperature: 0.2
             })
         });
@@ -24,28 +26,23 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
         const obj = JSON.parse(data.choices[0].message.content.match(/\{[\s\S]*\}/)[0]);
 
         res.innerHTML = `
-            <h3>📊 BÁO CÁO CHUYÊN GIA</h3>
+            <div class="section-title">📊 6 TIÊU CHÍ GỐC</div>
             <div class="metric-grid">
-                ${renderBar("Hài lòng", obj.hai_long)} ${renderBar("Hỗ trợ", obj.ho_tro)}
-                ${renderBar("Sản phẩm", obj.san_pham)} ${renderBar("Giá trị", obj.gia_tri)}
-                ${renderBar("Trải nghiệm", obj.trai_nghiem)} ${renderBar("Quay lại", obj.quay_lai)}
+                ${renderMetric("Hài lòng", obj.hai_long)} ${renderMetric("SP", obj.san_pham)} ${renderMetric("Trải nghiệm", obj.trai_nghiem)}
+                ${renderMetric("Hỗ trợ", obj.ho_tro)} ${renderMetric("Giá trị", obj.gia_tri)} ${renderMetric("Quay lại", obj.quay_lai)}
             </div>
-            <div class="psych-box">
-                <p><strong>👥 Chân dung:</strong> ${obj.chan_dung}</p>
-                <p><strong>🎯 Động cơ ẩn:</strong> ${obj.dong_co_an}</p>
-                <p><strong>📈 Chỉ số trung thành:</strong> ${obj.trung_thanh}/10</p>
+            <div class="section-title">🧠 PHÂN TÍCH TÂM LÝ CHUYÊN SÂU</div>
+            <div class="metric-grid">
+                ${renderMetric("Tin tưởng", obj.tin_tuong)} ${renderMetric("Bực bội", obj.buc_boi)} ${renderMetric("Hào hứng", obj.hao_hung)}
             </div>
-            <div class="action-box">
-                <h4>🚀 Hướng giải quyết chuyên gia:</h4>
-                <p>1. ${obj.giai_phap_1}</p>
-                <p>2. ${obj.giai_phap_2}</p>
-                <p>3. ${obj.giai_phap_3}</p>
+            <div style="margin-top:15px;">
+                <p><strong>🎯 Động cơ:</strong> ${obj.dong_co || 'N/A'}</p>
+                <p><strong>⚠️ Ngưỡng thất vọng:</strong> ${obj.nguong_that_vong || 'N/A'}</p>
             </div>
+            <div class="section-title">💡 INSIGHT CHUYÊN GIA</div>
+            <div class="insight-box">${obj.insight || 'N/A'}</div>
         `;
-    } catch (e) { res.innerHTML = "❌ AI bị lỗi dữ liệu, hãy thử lại!"; }
+    } catch (e) { res.innerHTML = "❌ Lỗi: Dữ liệu bị sai cấu trúc."; }
 });
 
-function renderBar(l, v) {
-    const val = parseInt(v) || 0;
-    return `<div class="metric-item"><div>${l} <strong>${val}/10</strong></div><div class="bar-container"><div class="bar-fill" style="width:${val*10}%"></div></div></div>`;
-}
+function renderMetric(l, v) { return `<div class="metric-card"><small>${l}</small><strong>${v || 0}/10</strong></div>`; }
