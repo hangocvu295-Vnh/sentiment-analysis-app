@@ -1,17 +1,29 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>Phân tích CSKH Pro</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="container">
-        <h1>📊 Phân tích Cảm xúc CSKH</h1>
-        <textarea id="userInput" placeholder="Nhập phản hồi của khách hàng tại đây..."></textarea>
-        <button id="analyzeBtn">Phân tích chuyên sâu</button>
-        <div id="result"></div>
+<div class="container">
+    <h1>📊 Phân tích Cảm xúc CSKH</h1>
+
+    <div class="product-info">
+        <input type="text" id="productName" placeholder="Tên sản phẩm">
+        <input type="text" id="productCode" placeholder="Mã sản phẩm">
     </div>
-    <script src="script.js"></script>
-</body>
-</html>
+
+    <div class="rating-upload">
+        <label>⭐ Đánh giá của khách:</label>
+        <select id="rating">
+            <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+            <option value="4">⭐⭐⭐⭐ (4)</option>
+            <option value="3">⭐⭐⭐ (3)</option>
+            <option value="2">⭐⭐ (2)</option>
+            <option value="1">⭐ (1)</option>
+        </select>
+
+        <input type="file" id="imageUpload" accept="image/*">
+    </div>
+
+    <textarea id="userInput" placeholder="Nhập phản hồi của khách hàng..."></textarea>
+
+    <button id="analyzeBtn">Phân tích chuyên sâu</button>
+
+    <div id="preview"></div>
+
+    <div id="result"></div>
+</div>

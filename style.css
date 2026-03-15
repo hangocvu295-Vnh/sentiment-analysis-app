@@ -1,20 +1,29 @@
-/* Tổng thể */
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 40px; }
-.container { max-width: 900px; margin: auto; background: #ffffff; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #e1e4e8; }
+.product-info{
+display:flex;
+gap:10px;
+margin-bottom:15px;
+}
 
-/* Khung nhập liệu (To và rộng rãi) */
-#userInput { width: 100%; height: 220px; padding: 20px; border: 2px solid #ced4da; border-radius: 12px; font-size: 16px; margin: 20px 0; box-sizing: border-box; transition: 0.3s; resize: none; }
-#userInput:focus { border-color: #0d6efd; outline: none; box-shadow: 0 0 0 0.25rem rgba(13,110,253,0.25); }
+.product-info input{
+flex:1;
+padding:12px;
+border-radius:10px;
+border:1px solid #ccc;
+}
 
-/* Nút bấm (Đẳng cấp) */
-#analyzeBtn { width: 100%; background: #212529; color: white; padding: 20px; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-#analyzeBtn:hover { background: #343a40; }
+.rating-upload{
+margin-bottom:15px;
+display:flex;
+gap:15px;
+align-items:center;
+}
 
-/* Bảng chỉ số (Grid 3 cột) */
-.metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 30px; }
-.metric-card { background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #e9ecef; text-align: center; }
-.metric-label { font-size: 0.9em; color: #6c757d; margin-bottom: 8px; display: block; }
-.metric-value { font-size: 1.5em; font-weight: 800; color: #212529; }
+.preview-img{
+margin-top:15px;
+max-width:200px;
+border-radius:10px;
+border:1px solid #ddd;
+}
 
 /* Khu vực Insight */
 .insight-section { margin-top: 30px; padding: 25px; border-radius: 15px; border-left: 8px solid #0d6efd; background: #f0f7ff; }
