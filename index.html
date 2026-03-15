@@ -1,40 +1,35 @@
-<h1>📊 Phân tích Cảm xúc CSKH</h1>
+<h1>📊 AI Customer Insight Analyzer</h1>
 
-<div class="two-box">
+<div class="layout">
 
-<!-- KHUNG THÔNG TIN -->
-<div class="left-box">
+<div class="card">
+<h2>Thông tin sản phẩm</h2>
 
-<h3>Thông tin sản phẩm</h3>
+<input id="productName" placeholder="Tên sản phẩm">
 
-<input type="text" id="productName" placeholder="Tên sản phẩm">
+<input id="productCode" placeholder="Mã sản phẩm">
 
-<input type="text" id="productCode" placeholder="Mã sản phẩm">
-
-<label>⭐ Đánh giá khách</label>
 <select id="rating">
-<option>⭐⭐⭐⭐⭐</option>
-<option>⭐⭐⭐⭐</option>
-<option>⭐⭐⭐</option>
-<option>⭐⭐</option>
-<option>⭐</option>
+<option value="5">⭐⭐⭐⭐⭐</option>
+<option value="4">⭐⭐⭐⭐</option>
+<option value="3">⭐⭐⭐</option>
+<option value="2">⭐⭐</option>
+<option value="1">⭐</option>
 </select>
 
-<label>📷 Ảnh minh họa</label>
 <input type="file" id="imageUpload">
 
 <div id="preview"></div>
 
 </div>
 
+<div class="card">
+<h2>Phản hồi khách hàng</h2>
 
-<!-- KHUNG PHẢN HỒI -->
-<div class="right-box">
-
-<h3>Phản hồi khách hàng</h3>
-
-<textarea id="userInput"
-placeholder="Nhập phản hồi khách hàng ở đây..."></textarea>
+<textarea
+id="userInput"
+placeholder="Dán phản hồi khách hàng tại đây..."
+></textarea>
 
 <button id="analyzeBtn">
 Phân tích chuyên sâu

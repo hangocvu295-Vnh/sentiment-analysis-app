@@ -1,68 +1,134 @@
-/* layout 2 khung */
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family: "Inter", "Segoe UI", sans-serif;
+}
 
-.two-box{
+body{
+background:linear-gradient(135deg,#667eea,#764ba2);
+min-height:100vh;
 display:flex;
+justify-content:center;
+align-items:center;
+padding:40px;
+}
+
+.container{
+width:1100px;
+background:white;
+border-radius:20px;
+padding:35px;
+box-shadow:0 20px 50px rgba(0,0,0,0.15);
+}
+
+h1{
+text-align:center;
+margin-bottom:30px;
+font-size:28px;
+color:#2d3748;
+}
+
+.layout{
+display:grid;
+grid-template-columns:320px 1fr;
 gap:25px;
-margin-top:20px;
 }
 
-/* khung trái */
-
-.left-box{
-width:35%;
-background:#f8f9ff;
+.card{
+background:#f9fafc;
 padding:20px;
-border-radius:12px;
-border:1px solid #e5e7eb;
+border-radius:15px;
+border:1px solid #e6e8ec;
 }
 
-/* khung phải */
-
-.right-box{
-flex:1;
-background:#ffffff;
-padding:20px;
-border-radius:12px;
-border:1px solid #e5e7eb;
-}
-
-/* input */
-
-.left-box input,
-.left-box select{
-width:100%;
-padding:10px;
-margin-top:8px;
+.card h2{
+font-size:18px;
 margin-bottom:15px;
-border-radius:8px;
-border:1px solid #ccc;
+color:#374151;
 }
 
-/* textarea */
-
-#userInput{
+input,select,textarea{
 width:100%;
-height:120px;
 padding:12px;
 border-radius:10px;
-border:1px solid #ccc;
-margin-top:10px;
+border:1px solid #d1d5db;
+margin-bottom:15px;
+font-size:14px;
+transition:0.2s;
 }
 
-/* button */
+input:focus,
+textarea:focus,
+select:focus{
+outline:none;
+border-color:#6366f1;
+box-shadow:0 0 0 2px rgba(99,102,241,0.2);
+}
+
+textarea{
+height:130px;
+resize:none;
+}
 
 #analyzeBtn{
 width:100%;
 padding:14px;
-margin-top:15px;
 border:none;
 border-radius:10px;
-background:#2f6fdd;
+background:linear-gradient(135deg,#6366f1,#7c3aed);
 color:white;
-font-weight:bold;
+font-weight:600;
+font-size:16px;
 cursor:pointer;
+transition:0.25s;
 }
 
 #analyzeBtn:hover{
-background:#1e5bc6;
+transform:translateY(-2px);
+box-shadow:0 10px 20px rgba(0,0,0,0.15);
+}
+
+#result{
+margin-top:20px;
+}
+
+.metric-grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:15px;
+margin-top:15px;
+}
+
+.metric-card{
+background:white;
+border-radius:12px;
+padding:15px;
+text-align:center;
+border:1px solid #eee;
+}
+
+.metric-label{
+font-size:13px;
+color:#6b7280;
+}
+
+.metric-value{
+font-size:20px;
+font-weight:700;
+color:#111827;
+}
+
+.insight-section{
+margin-top:20px;
+padding:15px;
+border-radius:12px;
+background:#eef2ff;
+border-left:5px solid #6366f1;
+}
+
+.preview-img{
+width:100%;
+border-radius:10px;
+margin-top:10px;
 }
