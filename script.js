@@ -5,6 +5,7 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
     res.innerHTML = "Đang phân tích...";
 
     try {
+        // Đảm bảo fetch đúng đường dẫn API /api/analyze
         const response = await fetch('/api/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -12,12 +13,12 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
         });
 
         const data = await response.json();
+        
+        // Kiểm tra dữ liệu trả về để tránh lỗi null
+        if (!data.choices || !data.choices[0]) throw new Error("API không trả về dữ liệu");
 
-        const obj = JSON.parse(
-            data.choices[0].message.content.match(/\{[\s\S]*\}/)[0]
-        );
+        const obj = JSON.parse(data.choices[0].message.content.match(/\{[\s\S]*\}/)[0]);
 
-        // Giữ nguyên logic màu sắc
         const colors = {
             "Sản phẩm": "#3b82f6", 
             "Dịch vụ": "#8b5cf6", 
@@ -26,7 +27,7 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
             "CSKH": "#06b6d4"
         };
 
-        // Ý nghĩa điểm
+        // Ý nghĩa điểm theo ảnh bạn cung cấp
         function getMeaning(s) {
             if (s <= 2) return "Rất tiêu cực";
             if (s <= 4) return "Tiêu cực";
@@ -35,10 +36,8 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
             return "Rất tích cực";
         }
 
-        // Render thanh điểm
+        // Render thanh điểm: Đã giữ nguyên logic, sửa hiển thị
         function renderBar(s, label) {
-
-            // CHỈ SỬA CHỖ NÀY
             let score = Math.max(0, Math.min(10, Number(s) || 0));
 
             return `
@@ -62,45 +61,29 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
         res.innerHTML = `
             <div class="card">
                 <h3>Phần 1: Chỉ số CX</h3>
-                ${Object.entries(obj.score_card)
-                    .map(([k,v]) => renderBar(v, k))
-                    .join('')}
+                ${Object.entries(obj.score_card).map(([k,v]) => renderBar(v, k)).join('')}
             </div>
 
             <div class="card">
                 <h3>Phần 2: Insight Khách hàng</h3>
-
-                <p><strong>Từ khóa:</strong> 
-                ${obj.insights.tu_khoa.join(', ')}</p>
-
-                <p><strong>Chân dung:</strong> 
-                ${obj.insights.chan_dung}</p>
-
-                <p><strong>Động cơ ẩn:</strong> 
-                ${obj.insights.dong_co_an}</p>
-
-                <p><strong>Tỷ lệ trung thành:</strong> 
-                ${obj.insights.ty_le_trung_thanh}</p>
+                <p><strong>Từ khóa:</strong> ${obj.insights.tu_khoa.join(', ')}</p>
+                <p><strong>Chân dung:</strong> ${obj.insights.chan_dung}</p>
+                <p><strong>Động cơ ẩn:</strong> ${obj.insights.dong_co_an}</p>
+                <p><strong>Tỷ lệ trung thành:</strong> ${obj.insights.ty_le_trung_thanh}</p>
             </div>
 
             <div class="card" style="grid-column: span 2;">
                 <h3>Phần 3: Phân tích & Giải pháp</h3>
-
                 <p>${obj.analysis.chuyen_sau}</p>
-
                 <ul style="padding-left: 20px;">
-                    ${obj.analysis.giai_phap
-                        .map(g => `<li>${g}</li>`)
-                        .join('')}
+                    ${obj.analysis.giai_phap.map(g => `<li>${g}</li>`).join('')}
                 </ul>
-
                 <p><i>Lưu ý: ${obj.analysis.luu_y}</i></p>
             </div>
         `;
 
     } catch (e) {
-
-        res.innerHTML = "Lỗi hiển thị dữ liệu.";
-
+        console.error("Lỗi:", e);
+        res.innerHTML = "Lỗi hiển thị dữ liệu. Vui lòng kiểm tra API.";
     }
 });
