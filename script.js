@@ -12,7 +12,10 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
         });
 
         const data = await response.json();
-        // Lấy dữ liệu an toàn
+        
+        // Kiểm tra xem data có tồn tại không
+        if (!data.choices || !data.choices[0]) throw new Error("API không trả về dữ liệu");
+
         const obj = JSON.parse(data.choices[0].message.content.match(/\{[\s\S]*\}/)[0]);
 
         const colors = {
@@ -23,7 +26,6 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
             "CSKH": "#06b6d4"
         };
 
-        // Sửa lỗi hiển thị: Ý nghĩa điểm theo ảnh bạn cung cấp
         function getMeaning(s) {
             if (s <= 2) return "Rất tiêu cực";
             if (s <= 4) return "Tiêu cực";
@@ -32,24 +34,16 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
             return "Rất tích cực";
         }
 
-        // Render thanh điểm (đã sửa lỗi không hiển thị đúng chỉ số)
         function renderBar(s, label) {
             let score = Math.max(0, Math.min(10, Number(s) || 0));
-
             return `
                 <div style="margin-bottom: 25px;">
                     <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom: 10px;">
                         <span>${label}:</span> 
                         <span>${score}/10 (${getMeaning(score)})</span>
                     </div>
-
                     <div style="background:#0f172a; height:12px; border-radius:6px;">
-                        <div style="
-                            width:${score * 10}%;
-                            height:100%;
-                            background:${colors[label] || '#3b82f6'};
-                            border-radius:6px;
-                        "></div>
+                        <div style="width:${score * 10}%; height:100%; background:${colors[label] || '#3b82f6'}; border-radius:6px;"></div>
                     </div>
                 </div>`;
         }
@@ -69,15 +63,23 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
             </div>
 
             <div class="card" style="grid-column: span 2;">
-                <h3>Phần 3: Phân tích & Giải pháp</h3>
-                <p>${obj.analysis.chuyen_sau}</p>
-                <ul style="padding-left: 20px;">
-                    ${obj.analysis.giai_phap.map(g => `<li>${g}</li>`).join('')}
-                </ul>
-                <p><i>Lưu ý: ${obj.analysis.luu_y}</i></p>
+                <h3>Phần 3: Phân tích chiến lược & Giải pháp (CX Analyst View)</h3>
+                <p style="margin-bottom: 15px;"><strong>Nhận định chuyên gia:</strong> ${obj.analysis.chuyen_sau}</p>
+                
+                <div style="background: #0f172a; padding: 15px; border-radius: 10px; border-left: 4px solid #60a5fa;">
+                    <p style="margin-top: 0; font-weight: bold;">Lộ trình khắc phục (Action Plan):</p>
+                    <ul style="padding-left: 20px; margin-bottom: 0;">
+                        ${obj.analysis.giai_phap.map(g => `<li>${g}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <p style="margin-top: 15px; font-style: italic; color: #94a3b8;">
+                    <strong>💡 Lưu ý chiến lược:</strong> ${obj.analysis.luu_y}
+                </p>
             </div>
         `;
     } catch (e) {
-        res.innerHTML = "Lỗi hiển thị dữ liệu.";
+        console.error(e);
+        res.innerHTML = "Lỗi hiển thị dữ liệu. Vui lòng kiểm tra lại phản hồi từ API.";
     }
 });

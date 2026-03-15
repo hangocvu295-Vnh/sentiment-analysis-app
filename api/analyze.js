@@ -11,17 +11,20 @@ export default async function handler(req, res) {
                 model: "llama-3.3-70b-versatile",
                 messages: [{ 
                     role: "system", 
-                    content: `Bạn là chuyên gia phân tích trải nghiệm khách hàng (CX Analyst). Hãy phân tích phản hồi khách hàng:
-                    1. "score_card": Chấm điểm thực tế 0-10 cho các tiêu chí.
-                    2. "insights": Trích xuất thông tin khách hàng.
-                    3. "analysis": Phần 3 gồm "chuyen_sau" (Phân tích nguyên nhân gốc rễ và tác động tâm lý), "giai_phap" (3 hành động cụ thể), "luu_y" (Lời khuyên chiến lược).
-                    Trả về JSON chuẩn. Tuyệt đối không thêm text bên ngoài.`
+                    content: `Bạn là chuyên gia phân tích CX. Hãy phân tích phản hồi khách hàng và chấm điểm thực tế từ 0-10. 
+                    Trả về JSON duy nhất với cấu trúc: 
+                    {
+                        "score_card": {"Sản phẩm": 0, "Dịch vụ": 0, "Giá trị thực tế": 0, "Giao nhận": 0, "CSKH": 0},
+                        "insights": {"tu_khoa": [], "chan_dung": "", "dong_co_an": "", "ty_le_trung_thanh": ""},
+                        "analysis": {"chuyen_sau": "...", "giai_phap": ["...", "...", "..."], "luu_y": "..."}
+                    }. 
+                    Yêu cầu: "chuyen_sau" phải là góc nhìn chuyên gia phân tích CX. "giai_phap" phải là 3 hành động thực tế. Tuyệt đối không thêm text bên ngoài JSON.`
                 }, { role: "user", content: text }]
             })
         });
         const data = await response.json();
         res.status(200).json(data);
     } catch (error) {
-        res.status(500).json({ error: "Lỗi kết nối" });
+        res.status(500).json({ error: "Lỗi kết nối API" });
     }
 }
