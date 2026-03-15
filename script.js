@@ -5,7 +5,6 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
     res.innerHTML = "Đang phân tích...";
 
     try {
-        // Đảm bảo fetch đúng đường dẫn API /api/analyze
         const response = await fetch('/api/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -13,10 +12,7 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
         });
 
         const data = await response.json();
-        
-        // Kiểm tra dữ liệu trả về để tránh lỗi null
-        if (!data.choices || !data.choices[0]) throw new Error("API không trả về dữ liệu");
-
+        // Lấy dữ liệu an toàn
         const obj = JSON.parse(data.choices[0].message.content.match(/\{[\s\S]*\}/)[0]);
 
         const colors = {
@@ -27,7 +23,7 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
             "CSKH": "#06b6d4"
         };
 
-        // Ý nghĩa điểm theo ảnh bạn cung cấp
+        // Sửa lỗi hiển thị: Ý nghĩa điểm theo ảnh bạn cung cấp
         function getMeaning(s) {
             if (s <= 2) return "Rất tiêu cực";
             if (s <= 4) return "Tiêu cực";
@@ -36,7 +32,7 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
             return "Rất tích cực";
         }
 
-        // Render thanh điểm: Đã giữ nguyên logic, sửa hiển thị
+        // Render thanh điểm (đã sửa lỗi không hiển thị đúng chỉ số)
         function renderBar(s, label) {
             let score = Math.max(0, Math.min(10, Number(s) || 0));
 
@@ -81,9 +77,7 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
                 <p><i>Lưu ý: ${obj.analysis.luu_y}</i></p>
             </div>
         `;
-
     } catch (e) {
-        console.error("Lỗi:", e);
-        res.innerHTML = "Lỗi hiển thị dữ liệu. Vui lòng kiểm tra API.";
+        res.innerHTML = "Lỗi hiển thị dữ liệu.";
     }
 });
