@@ -1,30 +1,11 @@
 const GROQ_API_KEY = "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";
 
-// Xem trước ảnh
-document.getElementById("imageInput").addEventListener("change", function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-            const preview = document.getElementById("imagePreview");
-            preview.src = reader.result;
-            preview.style.display = "block";
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
 document.getElementById("analyzeBtn").addEventListener("click", async () => {
     const text = document.getElementById("userInput").value.trim();
-    const pName = document.getElementById("pName").value || "Sản phẩm";
-    const pCode = document.getElementById("pCode").value || "N/A";
-    const stars = document.getElementById("pStars").value;
-    const pImg = document.getElementById("imagePreview").src;
-
-    if (!text) return alert("Vui lòng dán bình luận của khách!");
+    if (!text) return alert("Vui lòng nhập bình luận!");
     
     const res = document.getElementById("result");
-    res.innerHTML = "<p style='text-align:center;'>⏳ Hệ thống đang phân tích chuyên sâu...</p>";
+    res.innerHTML = "🔍 Đang phân tích dữ liệu...";
 
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -34,44 +15,47 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
                 model: "llama-3.3-70b-versatile",
                 messages: [{ 
                     role: "system", 
-                    content: `Bạn là CX Analyst chuyên sâu. Hãy phân tích phản hồi về sản phẩm [${pName}] (Mã: ${pCode}) đánh giá [${stars} sao]. 
-                    Trả về JSON PHẲNG với các key: "hai_long", "san_pham", "trai_nghiem", "ho_tro", "gia_tri", "quay_lai", "tin_tuong", "buc_boi", "hao_hung" (số 0-10), "dong_co", "nguong_that_vong", "insight_chien_luoc".` 
+                    content: `Bạn là chuyên gia phân tích CX. Phân tích feedback. 
+                    Trả về JSON PHẲNG duy nhất, KHÔNG ĐƯỢC THAY ĐỔI TÊN KEY: 
+                    "hai_long", "san_pham", "trai_nghiem", "ho_tro", "gia_tri", "quay_lai" (số 0-10);
+                    "dong_co_tam_ly", "nguong_that_vong", "ngan_han", "dai_han", "bai_hoc", "tu_khoa_nong" (mảng).` 
                 }, { role: "user", content: text }],
                 temperature: 0.2
             })
         });
-
+        
         const data = await response.json();
         const obj = JSON.parse(data.choices[0].message.content.match(/\{[\s\S]*\}/)[0]);
 
+        // Hàm kiểm tra an toàn dữ liệu để không hiển thị undefined
+        const getVal = (v) => (v !== undefined ? v : 0);
+        const getStr = (s) => (s || "Chưa có thông tin");
+
         res.innerHTML = `
-            <div class="res-header">
-                ${pImg ? `<img src="${pImg}">` : ''}
-                <div>
-                    <h2 style="margin:0">${pName}</h2>
-                    <small>Mã: ${pCode}</small>
-                    <div class="stars">${"★".repeat(stars)}${"☆".repeat(5-stars)}</div>
-                </div>
-            </div>
-
             <div class="metric-grid">
-                ${card("Hài lòng", obj.hai_long)} ${card("Sản phẩm", obj.san_pham)} ${card("Trải nghiệm", obj.trai_nghiem)}
-                ${card("Hỗ trợ", obj.ho_tro)} ${card("Giá trị", obj.gia_tri)} ${card("Quay lại", obj.quay_lai)}
-                ${card("Tin tưởng", obj.tin_tuong)} ${card("Bực bội", obj.buc_boi)} ${card("Hào hứng", obj.hao_hung)}
+                ${card("Hài lòng", getVal(obj.hai_long))} 
+                ${card("Sản phẩm", getVal(obj.san_pham))} 
+                ${card("Trải nghiệm", getVal(obj.trai_nghiem))}
+                ${card("Hỗ trợ", getVal(obj.ho_tro))} 
+                ${card("Giá trị", getVal(obj.gia_tri))} 
+                ${card("Quay lại", getVal(obj.quay_lai))}
             </div>
-
             <div class="insight-box">
-                <p><strong>🎯 Động cơ tâm lý:</strong> ${obj.dong_co || 'N/A'}</p>
-                <p><strong>⚠️ Ngưỡng thất vọng:</strong> ${obj.nguong_that_vong || 'N/A'}</p>
-                <p><strong>💡 Chiến lược chuyên gia:</strong> ${obj.insight_chien_luoc || 'N/A'}</p>
+                <p><strong>🎯 Động cơ tâm lý:</strong> ${getStr(obj.dong_co_tam_ly)}</p>
+                <p><strong>⚠️ Ngưỡng thất vọng:</strong> ${getStr(obj.nguong_that_vong)}</p>
+                <p><strong>🔥 Từ khóa nóng:</strong> ${Array.isArray(obj.tu_khoa_nong) ? obj.tu_khoa_nong.map(t => `<span class="tag">${t}</span>`).join('') : 'N/A'}</p>
+                <hr>
+                <p><strong>🚀 Ngắn hạn:</strong> ${getStr(obj.ngan_han)}</p>
+                <p><strong>📅 Dài hạn:</strong> ${getStr(obj.dai_han)}</p>
+                <p><strong>💡 Bài học:</strong> <em>${getStr(obj.bai_hoc)}</em></p>
             </div>
         `;
-    } catch (e) {
-        res.innerHTML = "<p style='color:red'>❌ Lỗi: Không thể phân tích dữ liệu. Vui lòng thử lại!</p>";
+    } catch (e) { 
+        res.innerHTML = "❌ Lỗi: Dữ liệu trả về không đúng định dạng. Hãy thử lại!"; 
+        console.error(e);
     }
 });
 
-function card(label, value) {
-    const v = value !== undefined ? value : 0;
-    return `<div class="card"><span>${label}</span><b>${v}/10</b></div>`;
+function card(l, v) { 
+    return `<div class="card">${l}<br><b>${v}/10</b></div>`; 
 }
