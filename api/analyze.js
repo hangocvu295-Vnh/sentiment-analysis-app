@@ -5,7 +5,7 @@ export default async function handler(req, res) {
         headers: { "Authorization": `Bearer ${process.env.GROQ_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
             model: "llama-3.3-70b-versatile",
-            messages: [{ role: "system", content: "Bạn là chuyên gia phân tích CX. Trả về JSON: {\"sentiment_score\": \"1-10\", \"root_cause\": \"...\", \"churn_risk\": \"...\", \"action_plan\": \"...\"}" }, { role: "user", content: text }]
+            messages: [{ role: "system", content: "Trả về JSON: {'sentiment_score': '', 'root_cause': '', 'churn_risk': '', 'action_plan': ''}" }, { role: "user", content: text }]
         })
     });
     const data = await response.json();
