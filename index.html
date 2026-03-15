@@ -2,29 +2,23 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Phân tích CX Chuyên Sâu</title>
+    <title>CX Insight Analytics</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>📊 PHÂN TÍCH BÁO CÁO KHÁCH HÀNG</h1>
-        <div class="row">
+        <h1>🔍 Phân tích Phản hồi</h1>
+        
+        <input type="password" id="apiKey" placeholder="Dán Groq API Key của bạn vào đây...">
+        
+        <div class="grid-2">
             <input type="text" id="pName" placeholder="Tên sản phẩm">
             <input type="text" id="pCode" placeholder="Mã sản phẩm">
         </div>
-        <div class="row">
-            <select id="pStars">
-                <option value="5">⭐⭐⭐⭐⭐ (5 sao)</option>
-                <option value="4">⭐⭐⭐⭐ (4 sao)</option>
-                <option value="3">⭐⭐⭐ (3 sao)</option>
-                <option value="2">⭐⭐ (2 sao)</option>
-                <option value="1">⭐ (1 sao)</option>
-            </select>
-            <input type="file" id="imageInput" accept="image/*">
-        </div>
-        <img id="imagePreview" style="display:none; max-width:100px; margin:10px 0;">
-        <textarea id="userInput" placeholder="Dán bình luận của khách hàng vào đây..."></textarea>
-        <button id="analyzeBtn">PHÂN TÍCH CHIẾN LƯỢC</button>
+        
+        <textarea id="userInput" rows="5" placeholder="Dán nội dung phản hồi khách hàng..."></textarea>
+        
+        <button id="analyzeBtn">PHÂN TÍCH CHIẾN LƯỢC 🚀</button>
         <div id="result"></div>
     </div>
     <script src="script.js"></script>
