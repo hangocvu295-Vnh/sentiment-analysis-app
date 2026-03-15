@@ -1,11 +1,8 @@
-const GROQ_API_KEY = "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";
-
 document.getElementById("analyzeBtn").addEventListener("click", async () => {
     const text = document.getElementById("userInput").value.trim();
     if (!text) return alert("Vui lòng nhập bình luận!");
-    
     const res = document.getElementById("result");
-    res.innerHTML = "🔍 Đang phân tích dữ liệu...";
+    res.innerHTML = "🔍 Đang phân tích chiến lược...";
 
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -13,13 +10,8 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
             headers: { "Authorization": `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
-                messages: [{ 
-                    role: "system", 
-                    content: `Bạn là chuyên gia phân tích CX. Phân tích feedback. 
-                    Trả về JSON PHẲNG duy nhất, KHÔNG ĐƯỢC THAY ĐỔI TÊN KEY: 
-                    "hai_long", "san_pham", "trai_nghiem", "ho_tro", "gia_tri", "quay_lai" (số 0-10);
-                    "dong_co_tam_ly", "nguong_that_vong", "ngan_han", "dai_han", "bai_hoc", "tu_khoa_nong" (mảng).` 
-                }, { role: "user", content: text }],
+                messages: [{ role: "system", content: `Bạn là CX Strategist. Trả về JSON PHẲNG. "tu_khoa_nong" phải là 1 mảng các từ. "ngan_han", "dai_han", "bai_hoc" phải là chuỗi văn bản.` }, 
+                { role: "user", content: text }],
                 temperature: 0.2
             })
         });
@@ -27,35 +19,30 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
         const data = await response.json();
         const obj = JSON.parse(data.choices[0].message.content.match(/\{[\s\S]*\}/)[0]);
 
-        // Hàm kiểm tra an toàn dữ liệu để không hiển thị undefined
-        const getVal = (v) => (v !== undefined ? v : 0);
-        const getStr = (s) => (s || "Chưa có thông tin");
+        // XỬ LÝ DỮ LIỆU CẨN THẬN ĐỂ KHÔNG BỊ LỖI [object Object]
+        const tagsHtml = Array.isArray(obj.tu_khoa_nong) ? obj.tu_khoa_nong.map(t => `<span class="tag">${t}</span>`).join(' ') : obj.tu_khoa_nong;
+        const nganHan = Array.isArray(obj.ngan_han) ? obj.ngan_han.join('. ') : obj.ngan_han;
+        const daiHan = Array.isArray(obj.dai_han) ? obj.dai_han.join('. ') : obj.dai_han;
 
         res.innerHTML = `
             <div class="metric-grid">
-                ${card("Hài lòng", getVal(obj.hai_long))} 
-                ${card("Sản phẩm", getVal(obj.san_pham))} 
-                ${card("Trải nghiệm", getVal(obj.trai_nghiem))}
-                ${card("Hỗ trợ", getVal(obj.ho_tro))} 
-                ${card("Giá trị", getVal(obj.gia_tri))} 
-                ${card("Quay lại", getVal(obj.quay_lai))}
+                ${card("Hài lòng", obj.hai_long)} ${card("Sản phẩm", obj.san_pham)} ${card("Trải nghiệm", obj.trai_nghiem)}
+                ${card("Hỗ trợ", obj.ho_tro)} ${card("Giá trị", obj.gia_tri)} ${card("Quay lại", obj.quay_lai)}
             </div>
+            
             <div class="insight-box">
-                <p><strong>🎯 Động cơ tâm lý:</strong> ${getStr(obj.dong_co_tam_ly)}</p>
-                <p><strong>⚠️ Ngưỡng thất vọng:</strong> ${getStr(obj.nguong_that_vong)}</p>
-                <p><strong>🔥 Từ khóa nóng:</strong> ${Array.isArray(obj.tu_khoa_nong) ? obj.tu_khoa_nong.map(t => `<span class="tag">${t}</span>`).join('') : 'N/A'}</p>
-                <hr>
-                <p><strong>🚀 Ngắn hạn:</strong> ${getStr(obj.ngan_han)}</p>
-                <p><strong>📅 Dài hạn:</strong> ${getStr(obj.dai_han)}</p>
-                <p><strong>💡 Bài học:</strong> <em>${getStr(obj.bai_hoc)}</em></p>
+                <p><strong>🎯 Động cơ:</strong> ${obj.dong_co_tam_ly}</p>
+                <p><strong>⚠️ Ngưỡng thất vọng:</strong> ${obj.nguong_that_vong}</p>
+                <p><strong>🔥 Từ khóa nóng:</strong> ${tagsHtml}</p>
+                <hr style="margin:15px 0;">
+                <p><strong>🚀 Ngắn hạn:</strong> ${nganHan}</p>
+                <p><strong>📅 Dài hạn:</strong> ${daiHan}</p>
+                <p><strong>💡 Bài học:</strong> <em>${obj.bai_hoc}</em></p>
             </div>
         `;
     } catch (e) { 
-        res.innerHTML = "❌ Lỗi: Dữ liệu trả về không đúng định dạng. Hãy thử lại!"; 
-        console.error(e);
+        res.innerHTML = "❌ Lỗi: Dữ liệu bị sai cấu trúc. Nhấn lại Phân tích!"; 
     }
 });
 
-function card(l, v) { 
-    return `<div class="card">${l}<br><b>${v}/10</b></div>`; 
-}
+function card(l, v) { return `<div class="card">${l}<br><b>${v}/10</b></div>`; }
