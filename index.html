@@ -1,29 +1,47 @@
-<div class="container">
-    <h1>📊 Phân tích Cảm xúc CSKH</h1>
+<h1>📊 Phân tích Cảm xúc CSKH</h1>
 
-    <div class="product-info">
-        <input type="text" id="productName" placeholder="Tên sản phẩm">
-        <input type="text" id="productCode" placeholder="Mã sản phẩm">
-    </div>
+<div class="two-box">
 
-    <div class="rating-upload">
-        <label>⭐ Đánh giá của khách:</label>
-        <select id="rating">
-            <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-            <option value="4">⭐⭐⭐⭐ (4)</option>
-            <option value="3">⭐⭐⭐ (3)</option>
-            <option value="2">⭐⭐ (2)</option>
-            <option value="1">⭐ (1)</option>
-        </select>
+<!-- KHUNG THÔNG TIN -->
+<div class="left-box">
 
-        <input type="file" id="imageUpload" accept="image/*">
-    </div>
+<h3>Thông tin sản phẩm</h3>
 
-    <textarea id="userInput" placeholder="Nhập phản hồi của khách hàng..."></textarea>
+<input type="text" id="productName" placeholder="Tên sản phẩm">
 
-    <button id="analyzeBtn">Phân tích chuyên sâu</button>
+<input type="text" id="productCode" placeholder="Mã sản phẩm">
 
-    <div id="preview"></div>
+<label>⭐ Đánh giá khách</label>
+<select id="rating">
+<option>⭐⭐⭐⭐⭐</option>
+<option>⭐⭐⭐⭐</option>
+<option>⭐⭐⭐</option>
+<option>⭐⭐</option>
+<option>⭐</option>
+</select>
 
-    <div id="result"></div>
+<label>📷 Ảnh minh họa</label>
+<input type="file" id="imageUpload">
+
+<div id="preview"></div>
+
+</div>
+
+
+<!-- KHUNG PHẢN HỒI -->
+<div class="right-box">
+
+<h3>Phản hồi khách hàng</h3>
+
+<textarea id="userInput"
+placeholder="Nhập phản hồi khách hàng ở đây..."></textarea>
+
+<button id="analyzeBtn">
+Phân tích chuyên sâu
+</button>
+
+<div id="result"></div>
+
+</div>
+
 </div>
