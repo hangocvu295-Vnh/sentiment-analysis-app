@@ -4,20 +4,30 @@
     <meta charset="UTF-8">
     <title>CX Insight Analytics</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        <h1>🔍 Phân tích Phản hồi</h1>
+        <header><h1><i class="fas fa-chart-line"></i> CX Insight Analytics</h1></header>
         
-        <div class="grid-2">
-            <input type="text" id="pName" placeholder="Tên sản phẩm">
-            <input type="text" id="pCode" placeholder="Mã sản phẩm">
+        <div class="main-layout">
+            <div class="left-panel">
+                <div class="product-card">
+                    <img id="productImg" src="placeholder.jpg" alt="Sản phẩm">
+                    <h3 id="pNameDisplay">Tên sản phẩm</h3>
+                    <p id="pCodeDisplay">Mã: N/A</p>
+                </div>
+            </div>
+            
+            <div class="right-panel">
+                <input type="text" id="pName" placeholder="Tên sản phẩm" oninput="updateUI()">
+                <input type="text" id="pCode" placeholder="Mã sản phẩm (ví dụ: sp01)" onblur="loadImg()">
+                <textarea id="userInput" rows="6" placeholder="Dán nội dung phản hồi khách hàng..."></textarea>
+                <button id="analyzeBtn"><i class="fas fa-rocket"></i> PHÂN TÍCH CHIẾN LƯỢC</button>
+            </div>
         </div>
-        
-        <textarea id="userInput" rows="5" placeholder="Dán nội dung phản hồi khách hàng..."></textarea>
-        
-        <button id="analyzeBtn">PHÂN TÍCH CHIẾN LƯỢC 🚀</button>
-        <div id="result"></div>
+
+        <div id="result" class="dashboard"></div>
     </div>
     <script src="script.js"></script>
 </body>
