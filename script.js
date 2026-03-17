@@ -7,7 +7,7 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
     res.innerHTML = "Đang phân tích...";
 
     try {
-        // Thay thế fetch local bằng Groq API
+        // Thay đổi: Gọi trực tiếp Groq API để tránh lỗi 500 local
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 
@@ -37,7 +37,7 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
         const data = await response.json();
         if (!data.choices || !data.choices[0]) throw new Error("API không trả về dữ liệu");
 
-        // Parse nội dung JSON từ AI
+        // Parse dữ liệu từ Groq
         const obj = JSON.parse(data.choices[0].message.content);
 
         // --- GIỮ NGUYÊN TOÀN BỘ LOGIC HIỂN THỊ CŨ CỦA BẠN ---
