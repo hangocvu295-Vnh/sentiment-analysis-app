@@ -7,7 +7,7 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
     res.innerHTML = "Đang phân tích...";
 
     try {
-        // Thay đổi: Gọi trực tiếp Groq API thay vì endpoint nội bộ
+        // Sửa API: Gọi trực tiếp Groq thay vì endpoint local
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 
@@ -30,18 +30,16 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
                     content: text
                 }],
                 temperature: 0.2,
-                response_format: { "type": "json_object" } // Ép AI trả về JSON chuẩn
+                response_format: { "type": "json_object" }
             })
         });
 
         const data = await response.json();
-        
         if (!data.choices || !data.choices[0]) throw new Error("API không trả về dữ liệu");
 
-        // Parse dữ liệu từ Groq
         const obj = JSON.parse(data.choices[0].message.content);
 
-        // --- GIỮ NGUYÊN TOÀN BỘ PHẦN LOGIC HIỂN THỊ CŨ CỦA BẠN ---
+        // --- GIỮ NGUYÊN TOÀN BỘ LOGIC HIỂN THỊ CŨ ---
         const colors = {
             "Sản phẩm": "#3b82f6", 
             "Dịch vụ": "#8b5cf6", 
