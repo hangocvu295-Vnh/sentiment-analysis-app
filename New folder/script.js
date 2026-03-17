@@ -1,4 +1,4 @@
-const GROQ_API_KEY = "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";
+const GROQ_API_KEY = "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";
 
 document.getElementById("analyzeBtn").addEventListener("click", async () => {
     const text = document.getElementById("userInput").value;
@@ -7,6 +7,7 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
     res.innerHTML = "Đang phân tích...";
 
     try {
+        // Thay thế fetch('/api/analyze') bằng gọi trực tiếp Groq API
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 
@@ -18,7 +19,7 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
                 messages: [{
                     role: "system",
                     content: `Bạn là CX Analyst chuyên nghiệp. Phân tích feedback và trả về JSON duy nhất. 
-                    Cấu trúc JSON bắt buộc:
+                    Cấu trúc JSON bắt buộc phải khớp với giao diện:
                     {
                       "score_card": { "Sản phẩm": 0, "Dịch vụ": 0, "Giá trị thực tế": 0, "Giao nhận": 0, "CSKH": 0 },
                       "insights": { "tu_khoa": [], "chan_dung": "", "dong_co_an": "", "ty_le_trung_thanh": "" },
@@ -35,13 +36,15 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
 
         const data = await response.json();
         
-        // Kiểm tra lỗi 401 hoặc lỗi API khác
-        if (data.error) {
-            throw new Error(data.error.message || "Lỗi API");
+        // Kiểm tra dữ liệu từ Groq
+        if (!data.choices || !data.choices[0]) {
+            throw new Error("Groq API không trả về kết quả hợp lệ");
         }
 
+        // Parse nội dung JSON từ message của AI
         const obj = JSON.parse(data.choices[0].message.content);
 
+        // --- GIỮ NGUYÊN TOÀN BỘ LOGIC HIỂN THỊ CŨ CỦA BẠN ---
         const colors = {
             "Sản phẩm": "#3b82f6", 
             "Dịch vụ": "#8b5cf6", 
@@ -72,12 +75,6 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
                 </div>`;
         }
 
-        // Xử lý an toàn cho các mảng dữ liệu
-        const keywords = Array.isArray(obj.insights.tu_khoa) ? obj.insights.tu_khoa.join(', ') : (obj.insights.tu_khoa || "N/A");
-        const solutions = Array.isArray(obj.analysis.giai_phap) 
-            ? obj.analysis.giai_phap.map(g => `<li>${g}</li>`).join('') 
-            : `<li>${obj.analysis.giai_phap || "Chưa có giải pháp"}</li>`;
-
         res.innerHTML = `
             <div class="card">
                 <h3>Phần 1: Chỉ số CX</h3>
@@ -86,30 +83,30 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
 
             <div class="card">
                 <h3>Phần 2: Insight Khách hàng</h3>
-                <p><strong>Từ khóa:</strong> ${keywords}</p>
-                <p><strong>Chân dung:</strong> ${obj.insights.chan_dung || "N/A"}</p>
-                <p><strong>Động cơ ẩn:</strong> ${obj.insights.dong_co_an || "N/A"}</p>
-                <p><strong>Tỷ lệ trung thành:</strong> ${obj.insights.ty_le_trung_thanh || "N/A"}</p>
+                <p><strong>Từ khóa:</strong> ${Array.isArray(obj.insights.tu_khoa) ? obj.insights.tu_khoa.join(', ') : obj.insights.tu_khoa}</p>
+                <p><strong>Chân dung:</strong> ${obj.insights.chan_dung}</p>
+                <p><strong>Động cơ ẩn:</strong> ${obj.insights.dong_co_an}</p>
+                <p><strong>Tỷ lệ trung thành:</strong> ${obj.insights.ty_le_trung_thanh}</p>
             </div>
 
             <div class="card" style="grid-column: span 2;">
-                <h3>Phần 3: Phân tích chiến lược & Giải pháp</h3>
-                <p style="margin-bottom: 15px;"><strong>Nhận định chuyên sâu:</strong> ${obj.analysis.chuyen_sau || "N/A"}</p>
+                <h3>Phần 3: Phân tích chiến lược & Giải pháp (CX Analyst View)</h3>
+                <p style="margin-bottom: 15px;"><strong>Nhận định chuyên gia:</strong> ${obj.analysis.chuyen_sau}</p>
                 
                 <div style="background: #0f172a; padding: 15px; border-radius: 10px; border-left: 4px solid #60a5fa;">
-                    <p style="margin-top: 0; font-weight: bold;">Lộ trình khắc phục:</p>
+                    <p style="margin-top: 0; font-weight: bold;">Lộ trình khắc phục (Action Plan):</p>
                     <ul style="padding-left: 20px; margin-bottom: 0;">
-                        ${solutions}
+                        ${Array.isArray(obj.analysis.giai_phap) ? obj.analysis.giai_phap.map(g => `<li>${g}</li>`).join('') : `<li>${obj.analysis.giai_phap}</li>`}
                     </ul>
                 </div>
                 
                 <p style="margin-top: 15px; font-style: italic; color: #94a3b8;">
-                    <strong>💡 Lưu ý chiến lược:</strong> ${obj.analysis.luu_y || "N/A"}
+                    <strong>💡 Lưu ý chiến lược:</strong> ${obj.analysis.luu_y}
                 </p>
             </div>
         `;
     } catch (e) {
-        console.error(e);
-        res.innerHTML = `<p style="color: #ff5f5f;">❌ Lỗi: ${e.message}. Vui lòng kiểm tra lại cấu hình hoặc API Key.</p>`;
+        console.error("Chi tiết lỗi:", e);
+        res.innerHTML = `<p style="color: #ff5f5f;">❌ Lỗi: ${e.message}. Vui lòng thử lại!</p>`;
     }
 });
