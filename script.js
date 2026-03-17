@@ -1,3 +1,5 @@
+const GROQ_API_KEY = "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";
+
 document.getElementById("analyzeBtn").addEventListener("click", async () => {
     const text = document.getElementById("userInput").value;
     const res = document.getElementById("result");
@@ -5,19 +7,41 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
     res.innerHTML = "Đang phân tích...";
 
     try {
-        const response = await fetch('/api/analyze', {
+        // Thay đổi: Gọi trực tiếp Groq API thay vì endpoint nội bộ
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text })
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${GROQ_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                messages: [{
+                    role: "system",
+                    content: `Bạn là CX Analyst chuyên nghiệp. Phân tích feedback và trả về JSON duy nhất.
+                    Cấu trúc JSON bắt buộc:
+                    {
+                      "score_card": { "Sản phẩm": 0, "Dịch vụ": 0, "Giá trị thực tế": 0, "Giao nhận": 0, "CSKH": 0 },
+                      "insights": { "tu_khoa": [], "chan_dung": "", "dong_co_an": "", "ty_le_trung_thanh": "" },
+                      "analysis": { "chuyen_sau": "", "giai_phap": [], "luu_y": "" }
+                    }`
+                }, {
+                    role: "user",
+                    content: text
+                }],
+                temperature: 0.2,
+                response_format: { "type": "json_object" } // Ép AI trả về JSON chuẩn
+            })
         });
 
         const data = await response.json();
         
-        // Kiểm tra xem data có tồn tại không
         if (!data.choices || !data.choices[0]) throw new Error("API không trả về dữ liệu");
 
-        const obj = JSON.parse(data.choices[0].message.content.match(/\{[\s\S]*\}/)[0]);
+        // Parse dữ liệu từ Groq
+        const obj = JSON.parse(data.choices[0].message.content);
 
+        // --- GIỮ NGUYÊN TOÀN BỘ PHẦN LOGIC HIỂN THỊ CŨ CỦA BẠN ---
         const colors = {
             "Sản phẩm": "#3b82f6", 
             "Dịch vụ": "#8b5cf6", 
@@ -56,7 +80,7 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
 
             <div class="card">
                 <h3>Phần 2: Insight Khách hàng</h3>
-                <p><strong>Từ khóa:</strong> ${obj.insights.tu_khoa.join(', ')}</p>
+                <p><strong>Từ khóa:</strong> ${Array.isArray(obj.insights.tu_khoa) ? obj.insights.tu_khoa.join(', ') : obj.insights.tu_khoa}</p>
                 <p><strong>Chân dung:</strong> ${obj.insights.chan_dung}</p>
                 <p><strong>Động cơ ẩn:</strong> ${obj.insights.dong_co_an}</p>
                 <p><strong>Tỷ lệ trung thành:</strong> ${obj.insights.ty_le_trung_thanh}</p>
@@ -69,7 +93,7 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
                 <div style="background: #0f172a; padding: 15px; border-radius: 10px; border-left: 4px solid #60a5fa;">
                     <p style="margin-top: 0; font-weight: bold;">Lộ trình khắc phục (Action Plan):</p>
                     <ul style="padding-left: 20px; margin-bottom: 0;">
-                        ${obj.analysis.giai_phap.map(g => `<li>${g}</li>`).join('')}
+                        ${Array.isArray(obj.analysis.giai_phap) ? obj.analysis.giai_phap.map(g => `<li>${g}</li>`).join('') : `<li>${obj.analysis.giai_phap}</li>`}
                     </ul>
                 </div>
                 

@@ -1,8 +1,18 @@
-# Sử dụng Nginx làm server
-FROM nginx:alpine
+# Sử dụng Node.js làm môi trường
+FROM node:18-alpine
 
-# Copy toàn bộ file web vào thư mục của Nginx
-COPY . /usr/share/nginx/html
+# Thư mục làm việc trong container
+WORKDIR /app
 
-# Expose cổng 80
-EXPOSE 80
+# Copy package config
+COPY package*.json ./
+RUN npm install
+
+# Copy toàn bộ mã nguồn
+COPY . .
+
+# Expose cổng 3000
+EXPOSE 3000
+
+# Chạy server
+CMD ["npm", "start"]
