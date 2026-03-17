@@ -7,7 +7,7 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
     res.innerHTML = "Đang phân tích...";
 
     try {
-        // Thay đổi: Gọi trực tiếp Groq API để tránh lỗi 500 local
+        // Thay thế fetch('/api/analyze') bằng gọi trực tiếp Groq API
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 
@@ -18,8 +18,8 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
                 model: "llama-3.3-70b-versatile",
                 messages: [{
                     role: "system",
-                    content: `Bạn là CX Analyst chuyên nghiệp. Phân tích feedback và trả về JSON duy nhất.
-                    Cấu trúc JSON bắt buộc:
+                    content: `Bạn là CX Analyst chuyên nghiệp. Phân tích feedback và trả về JSON duy nhất. 
+                    Cấu trúc JSON bắt buộc phải khớp với giao diện:
                     {
                       "score_card": { "Sản phẩm": 0, "Dịch vụ": 0, "Giá trị thực tế": 0, "Giao nhận": 0, "CSKH": 0 },
                       "insights": { "tu_khoa": [], "chan_dung": "", "dong_co_an": "", "ty_le_trung_thanh": "" },
@@ -35,9 +35,13 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
         });
 
         const data = await response.json();
-        if (!data.choices || !data.choices[0]) throw new Error("API không trả về dữ liệu");
+        
+        // Kiểm tra dữ liệu từ Groq
+        if (!data.choices || !data.choices[0]) {
+            throw new Error("Groq API không trả về kết quả hợp lệ");
+        }
 
-        // Parse dữ liệu từ Groq
+        // Parse nội dung JSON từ message của AI
         const obj = JSON.parse(data.choices[0].message.content);
 
         // --- GIỮ NGUYÊN TOÀN BỘ LOGIC HIỂN THỊ CŨ CỦA BẠN ---
@@ -102,7 +106,7 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
             </div>
         `;
     } catch (e) {
-        console.error(e);
-        res.innerHTML = "Lỗi hiển thị dữ liệu. Vui lòng kiểm tra lại phản hồi từ API.";
+        console.error("Chi tiết lỗi:", e);
+        res.innerHTML = `<p style="color: #ff5f5f;">❌ Lỗi: ${e.message}. Vui lòng thử lại!</p>`;
     }
 });
